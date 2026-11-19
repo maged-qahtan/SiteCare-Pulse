@@ -169,7 +169,7 @@ function ReportsContent() {
       <div className="report-print mx-auto max-w-5xl">
         <div className="print-hidden flex flex-wrap items-center justify-between gap-3">
           <Link href="/dashboard/" className="inline-flex items-center gap-2 text-xs font-semibold text-muted hover:text-brand"><ArrowLeft size={15} /> Back to overview</Link>
-          <nav aria-label="Workspace navigation" className="flex flex-wrap gap-3 text-xs font-semibold text-muted"><Link href="/clients/" className="hover:text-brand">Clients</Link><Link href="/sites/" className="hover:text-brand">Websites</Link><Link href="/requests/" className="hover:text-brand">Requests</Link><Link href="/sla-settings/" className="hover:text-brand">SLA settings</Link><Link href="/team/" className="hover:text-brand">Team</Link></nav>
+          <nav aria-label="Workspace navigation" className="flex flex-wrap gap-3 text-xs font-semibold text-muted"><Link href="/clients/" className="hover:text-brand">Clients</Link><Link href="/sites/" className="hover:text-brand">Websites</Link><Link href="/requests/" className="hover:text-brand">Requests</Link><Link href="/sla-settings/" className="hover:text-brand">SLA settings</Link><Link href="/team/" className="hover:text-brand">Team</Link><Link href="/help/" className="hover:text-brand">Help</Link></nav>
         </div>
         <div className="mt-6 flex flex-wrap items-end justify-between gap-4">
           <div className="hidden print:block mb-5 border-b border-slate-300 pb-4"><div className="text-xl font-bold text-slate-900">SiteCare Pulse</div><div className="mt-1 text-xs text-slate-600">Agency client care operations report · {month}</div></div>
