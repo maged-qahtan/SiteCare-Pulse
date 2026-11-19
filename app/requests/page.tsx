@@ -3,7 +3,7 @@
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import {
   Activity, ArrowLeft, CalendarClock, CircleAlert, Clock3, LoaderCircle,
-  Plus, RefreshCw, Send, Wrench
+  MessageSquare, Plus, RefreshCw, Send, Wrench
 } from "lucide-react";
 import Link from "next/link";
 import { AuthGuard } from "@/components/auth-guard";
@@ -26,6 +26,7 @@ type ServiceRequest = {
   due_at: string | null;
   created_at: string;
 };
+type RequestComment = { id: string; request_id: string; user_id: string; body: string; created_at: string };
 type Membership = { organization_id: string; role: Role; client_account_id: string | null };
 type DbResult<T> = { data: T | null; error: Error | null };
 
@@ -39,6 +40,8 @@ const priorityLabels: Record<Priority, string> = {
 
 function RequestsContent() {
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
+  const [comments, setComments] = useState<RequestComment[]>([]);
+  const [commentDrafts, setCommentDrafts] = useState<Record<string, string>>({});
   const [clients, setClients] = useState<ClientAccount[]>([]);
   const [sites, setSites] = useState<Site[]>([]);
   const [role, setRole] = useState<Role>("client");
@@ -100,21 +103,32 @@ function RequestsContent() {
           };
         };
       };
+      const commentTable = supabase.from("request_comments") as unknown as {
+        select: (columns: string) => {
+          eq: (column: string, value: string) => {
+            order: (column: string, options: { ascending: boolean }) => Promise<DbResult<RequestComment[]>>;
+          };
+        };
+      };
 
-      const [clientResult, siteResult, requestResult] = await Promise.all([
+      const [clientResult, siteResult, requestResult, commentResult] = await Promise.all([
         clientTable.select("id,name,status").eq("organization_id", membership.organization_id).order("name", { ascending: true }),
         siteTable.select("id,client_account_id,name,url,platform").eq("organization_id", membership.organization_id).order("name", { ascending: true }),
         requestTable.select("id,client_account_id,site_id,title,description,priority,status,due_at,created_at")
-          .eq("organization_id", membership.organization_id).order("created_at", { ascending: false })
+          .eq("organization_id", membership.organization_id).order("created_at", { ascending: false }),
+        commentTable.select("id,request_id,user_id,body,created_at")
+          .eq("organization_id", membership.organization_id).order("created_at", { ascending: true })
       ]);
       if (clientResult.error) throw clientResult.error;
       if (siteResult.error) throw siteResult.error;
       if (requestResult.error) throw requestResult.error;
+      if (commentResult.error) throw commentResult.error;
 
       const visibleClients = (clientResult.data ?? []) as ClientAccount[];
       setClients(visibleClients);
       setSites((siteResult.data ?? []) as Site[]);
       setRequests((requestResult.data ?? []) as ServiceRequest[]);
+      setComments((commentResult.data ?? []) as RequestComment[]);
       if (membership.client_account_id) setClientId(membership.client_account_id);
       else if (!clientId && visibleClients[0]) setClientId(visibleClients[0].id);
     } catch (caught) {
@@ -182,6 +196,34 @@ function RequestsContent() {
     }
   }
 
+  async function handleAddComment(event: FormEvent<HTMLFormElement>, requestId: string) {
+    event.preventDefault();
+    const body = (commentDrafts[requestId] ?? "").trim();
+    if (!body) return;
+    setError("");
+    setNotice("");
+    try {
+      const supabase = createClient();
+      const { data: authData, error: authError } = await supabase.auth.getUser();
+      if (authError || !authData.user) throw authError ?? new Error("Please sign in again.");
+      const commentTable = supabase.from("request_comments") as unknown as {
+        insert: (values: { organization_id: string; request_id: string; user_id: string; body: string }) => Promise<{ error: Error | null }>;
+      };
+      const { error: insertError } = await commentTable.insert({
+        organization_id: organizationId,
+        request_id: requestId,
+        user_id: authData.user.id,
+        body
+      });
+      if (insertError) throw insertError;
+      setCommentDrafts(current => ({ ...current, [requestId]: "" }));
+      setNotice("Comment added.");
+      await loadWorkspace();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Unable to add comment.");
+    }
+  }
+
   async function updateStatus(requestId: string, nextStatus: RequestStatus) {
     setError("");
     setNotice("");
@@ -227,6 +269,14 @@ function RequestsContent() {
               </div>
               {request.due_at && <div className="mt-3 flex items-center gap-1.5 text-[10px] text-muted"><CalendarClock size={12} /> Due {new Date(request.due_at).toLocaleString()}</div>}
               {!isClient && <div className="mt-3 flex items-center gap-2"><label htmlFor={`status-${request.id}`} className="text-[10px] font-semibold text-muted">Update status</label><select id={`status-${request.id}`} value={request.status} onChange={event => void updateStatus(request.id, event.target.value as RequestStatus)} className="rounded-lg border border-line bg-white px-2 py-1.5 text-[10px] text-ink">{Object.entries(statusLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>}
+              <div className="mt-4 border-t border-line pt-3">
+                <div className="mb-2 flex items-center gap-1.5 text-[10px] font-bold text-muted"><MessageSquare size={12} /> Updates ({comments.filter(comment => comment.request_id === request.id).length})</div>
+                <div className="space-y-2">{comments.filter(comment => comment.request_id === request.id).map(comment => <div key={comment.id} className="rounded-lg bg-[#f7f9f8] px-3 py-2"><p className="whitespace-pre-wrap text-[11px] leading-5 text-ink">{comment.body}</p><p className="mt-1 text-[9px] text-muted">{new Date(comment.created_at).toLocaleString()}</p></div>)}</div>
+                <form onSubmit={event => void handleAddComment(event, request.id)} className="mt-3 flex gap-2">
+                  <input value={commentDrafts[request.id] ?? ""} onChange={event => setCommentDrafts(current => ({ ...current, [request.id]: event.target.value }))} maxLength={3000} placeholder="Write an update..." aria-label="Write an update" className="min-w-0 flex-1 rounded-lg border border-line px-3 py-2 text-[11px] outline-none focus:border-brand" />
+                  <button type="submit" disabled={!(commentDrafts[request.id] ?? "").trim()} aria-label="Add comment" className="rounded-lg bg-brand px-3 text-white disabled:opacity-40"><Send size={13} /></button>
+                </form>
+              </div>
             </article>)}</div>}
           </section>
 
