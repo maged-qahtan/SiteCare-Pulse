@@ -55,7 +55,7 @@ export default function Home() {
           </Link>
           <nav className="flex items-center gap-3 text-xs font-semibold sm:gap-5">
             <Link href="/login/" className="text-muted hover:text-brand">Sign in</Link>
-            <Link href="/login/" className="rounded-xl bg-brand px-4 py-2.5 text-white hover:bg-brand-dark">Create workspace</Link>
+            <Link href="/login/?mode=signup" className="rounded-xl bg-brand px-4 py-2.5 text-white hover:bg-brand-dark">Create workspace</Link>
           </nav>
         </div>
       </header>
@@ -67,7 +67,7 @@ export default function Home() {
             <h1 className="max-w-2xl text-4xl font-bold leading-[1.12] tracking-tight sm:text-5xl lg:text-6xl">Every client website. Every request. <span className="text-brand">One clear workspace.</span></h1>
             <p className="mt-6 max-w-xl text-base leading-8 text-muted">SiteCare Pulse helps small web agencies organise client accounts, website records, service requests, conversations, and the work history behind ongoing website care.</p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/login/" className="inline-flex items-center gap-2 rounded-xl bg-brand px-5 py-3.5 text-sm font-bold text-white shadow-sm hover:bg-brand-dark">Get started <ArrowRight size={17} /></Link>
+              <Link href="/login/?mode=signup" className="inline-flex items-center gap-2 rounded-xl bg-brand px-5 py-3.5 text-sm font-bold text-white shadow-sm hover:bg-brand-dark">Get started <ArrowRight size={17} /></Link>
               <Link href="/login/" className="inline-flex items-center rounded-xl border border-line bg-white px-5 py-3.5 text-sm font-bold text-ink hover:border-brand">Sign in to your workspace</Link>
             </div>
             <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-2 text-[11px] text-muted">
@@ -125,7 +125,7 @@ export default function Home() {
             <p className="text-xs font-bold uppercase tracking-[.16em] text-[#a8d7c3]">Start with a clear workflow</p>
             <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">Bring your agency’s client care into one place.</h2>
             <p className="mt-4 text-sm leading-7 text-[#d0e1d9]">Create your workspace, add a client, register their website, and start recording service requests and updates.</p>
-            <Link href="/login/" className="mt-7 inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-[#173f34] hover:bg-[#edf4f0]">Create your workspace <ArrowRight size={17} /></Link>
+            <Link href="/login/?mode=signup" className="mt-7 inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-[#173f34] hover:bg-[#edf4f0]">Create your workspace <ArrowRight size={17} /></Link>
           </div>
         </div>
       </section>
