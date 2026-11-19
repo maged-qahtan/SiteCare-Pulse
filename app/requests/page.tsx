@@ -102,8 +102,7 @@ function RequestsContent() {
       };
 
       const [clientResult, siteResult, requestResult] = await Promise.all([
-        clientTable.from ? Promise.resolve({ data: [], error: null } as DbResult<ClientAccount[]>) :
-          clientTable.select("id,name,status").eq("organization_id", membership.organization_id).order("name", { ascending: true }),
+        clientTable.select("id,name,status").eq("organization_id", membership.organization_id).order("name", { ascending: true }),
         siteTable.select("id,client_account_id,name,url,platform").eq("organization_id", membership.organization_id).order("name", { ascending: true }),
         requestTable.select("id,client_account_id,site_id,title,description,priority,status,due_at,created_at")
           .eq("organization_id", membership.organization_id).order("created_at", { ascending: false })
