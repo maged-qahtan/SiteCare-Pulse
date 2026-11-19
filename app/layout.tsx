@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "SiteCare Pulse — Agency Client Care",
-  description: "The operations hub for website care teams and their clients."
+  title: "SiteCare Pulse — Website Care Operations for Agencies",
+  description: "Manage client accounts, website portfolios, service requests, discussions, activity history, and monthly work reports in one agency workspace."
 };
 
 export default function RootLayout({
