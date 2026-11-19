@@ -52,7 +52,7 @@ export default function LoginPage() {
         if (signUpError) throw signUpError;
 
         if (data.session) {
-          router.replace("/");
+          router.replace("/dashboard/");
           router.refresh();
         } else {
           setMessage("Account created. Check your email for the confirmation link before signing in.");
@@ -64,7 +64,7 @@ export default function LoginPage() {
         });
 
         if (signInError) throw signInError;
-        router.replace("/");
+        router.replace("/dashboard/");
         router.refresh();
       }
     } catch (caught) {
