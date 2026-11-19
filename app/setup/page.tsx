@@ -58,7 +58,7 @@ export default function SetupPage() {
       const { error: createError } = await supabase.rpc("create_organization", {
         org_name: name.trim(),
         org_slug: cleanSlug
-      });
+      } as never);
       if (createError) throw createError;
       router.replace("/");
       router.refresh();
