@@ -30,9 +30,6 @@ const navItems = [
   { label: "Client accounts", icon: BriefcaseBusiness },
   { label: "Websites", icon: Globe2 },
   { label: "Requests & tasks", icon: Wrench },
-  { label: "Service level", icon: Clock3 },
-  { label: "Activity log", icon: Activity },
-  { label: "Reports", icon: FileText }
 ];
 
 const requests = [
@@ -66,13 +63,9 @@ export default function Home() {
         <nav className="space-y-1">
           {navItems.map((item) => {
             const Icon = item.icon;
-            return <a key={item.label} href={item.label === "Client accounts" ? "/clients/" : item.label === "Websites" ? "/sites/" : item.label === "Requests & tasks" ? "/requests/" : item.active ? "/" : "#"} className={`sidebar-link ${item.active ? "active" : ""}`}><Icon size={17} />{item.label}{item.label === "Requests & tasks" && <span className="ml-auto rounded-full bg-white px-2 py-0.5 text-[10px] text-slate-500">8</span>}</a>;
+            const href = item.label === "Client accounts" ? "/clients/" : item.label === "Websites" ? "/sites/" : item.label === "Requests & tasks" ? "/requests/" : "/";
+            return <Link key={item.label} href={href} className={`sidebar-link ${item.active ? "active" : ""}`}><Icon size={17} />{item.label}{item.label === "Requests & tasks" && <span className="ml-auto rounded-full bg-white px-2 py-0.5 text-[10px] text-slate-500">8</span>}</Link>;
           })}
-        </nav>
-        <div className="mb-3 mt-9 px-3 text-[10px] font-bold uppercase tracking-[.16em] text-slate-400">Manage</div>
-        <nav className="space-y-1">
-          <a href="#" className="sidebar-link"><Users size={17} />Team members</a>
-          <a href="#" className="sidebar-link"><Settings2 size={17} />Settings</a>
         </nav>
         <div className="mt-auto rounded-2xl bg-[#f5f8f6] p-4">
           <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-white text-brand"><CircleHelp size={17} /></div>
