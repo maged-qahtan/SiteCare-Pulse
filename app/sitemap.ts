@@ -1,5 +1,7 @@
 import type { MetadataRoute } from "next";
 
+export const dynamic = "force-static";
+
 const siteUrl = "https://sitecare-pulse1.pages.dev";
 
 export default function sitemap(): MetadataRoute.Sitemap {
