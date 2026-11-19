@@ -54,7 +54,7 @@ The app expects these public environment variables at deployment time:
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
 
-Do not put a Supabase `service_role` or secret key in browser-visible environment variables or commit secrets to GitHub. The middleware leaves preview routes accessible until both public values are configured; once configured, it verifies Supabase JWT claims before protecting the dashboard.
+Do not put a Supabase `service_role` or secret key in browser-visible environment variables or commit secrets to GitHub. The current dashboard gate runs in the browser and checks the signed-in Supabase user and organization membership. It is a navigation guard only, not server-side authorization. Supabase Row Level Security is the actual data-protection boundary and must remain enabled and correctly tested for every table and operation.
 
 The Supabase Auth URL configuration must allow the deployed app's `https://<your-pages-domain>/auth/callback/` URL and the local development callback `http://localhost:3000/auth/callback/` before signup confirmation can be tested. Cloudflare Pages deployment must use the Free plan; do not enable paid Workers, Functions, or add-ons.
 
