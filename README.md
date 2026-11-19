@@ -30,7 +30,9 @@ The Supabase database currently records these applied migration versions, and th
 6. `20261119021837_activity_event_triggers.sql` — automatically records key workspace activity in the activity_events table.
 7. `20261119022422_enrich_activity_event_details.sql` — includes client references in request and comment events for accurate reporting.
 8. `20261119022628_move_create_organization_definer_private.sql` — moves the SECURITY DEFINER implementation into the non-exposed private schema and leaves a SECURITY INVOKER RPC wrapper in public.
-9. `20261119023219_harden_private_rls_helper_search_paths.sql` — hardens all private RLS helper function search paths.\n10. `20261119023313_request_evidence_storage.sql` — adds a private evidence bucket, attachment metadata table, and tenant-scoped storage policies.\n11. `20261119023331_log_request_attachment_activity.sql` — records evidence uploads in the request activity history.
+9. `20261119023219_harden_private_rls_helper_search_paths.sql` — hardens all private RLS helper function search paths.
+10. `20261119023313_request_evidence_storage.sql` — adds a private evidence bucket, attachment metadata table, and tenant-scoped storage policies.
+11. `20261119023331_log_request_attachment_activity.sql` — records evidence uploads in the request activity history.
 
 Temporary transaction-based SQL checks confirmed:
 - An organization owner can see both test client accounts and is recognized as an admin.
