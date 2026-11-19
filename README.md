@@ -39,7 +39,6 @@ The Supabase database currently records these applied migration versions, and th
 15. `20261119111837_add_configurable_sla_policies.sql` — adds priority-based response/resolution targets and automatic request timestamps.
 16. `20261119111935_fix_sla_trigger_timestamp_variable.sql` — corrects the SLA trigger timestamp variable.
 17. `20261119112142_seed_sla_policies_for_new_workspaces.sql` — creates the four default priority policies whenever a new agency workspace is created.
-17. `20261119112142_seed_sla_policies_for_new_workspaces.sql` — creates the four default priority policies whenever a new agency workspace is created.
 
 Temporary transaction-based SQL checks confirmed:
 - An owner can see the workspace's client accounts and use the workspace-creation RPC.
