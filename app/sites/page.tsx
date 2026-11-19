@@ -6,6 +6,7 @@ import Link from "next/link";
 import { AuthGuard } from "@/components/auth-guard";
 import { SignOutButton } from "@/components/sign-out-button";
 import { createClient } from "@/lib/supabase/client";
+import { getActiveMembership } from "@/lib/supabase/workspace";
 
 type Role = "owner" | "admin" | "member" | "client";
 type ClientAccount = { id: string; name: string };
@@ -47,18 +48,7 @@ function SitesContent() {
       const supabase = createClient();
       const { data: authData, error: authError } = await supabase.auth.getUser();
       if (authError || !authData.user) throw authError ?? new Error("Please sign in again.");
-      const membershipQuery = supabase.from("organization_members") as unknown as {
-        select: (columns: string) => {
-          eq: (column: string, value: string) => {
-            limit: (count: number) => { single: () => Promise<DbResult<Membership>> };
-          };
-        };
-      };
-      const { data: membership, error: membershipError } = await membershipQuery
-        .select("organization_id,role,client_account_id")
-        .eq("user_id", authData.user.id).limit(1).single();
-      if (membershipError) throw membershipError;
-      if (!membership) throw new Error("No agency workspace membership was found.");
+      const membership = await getActiveMembership(supabase, authData.user.id);
       setRole(membership.role);
       setOrganizationId(membership.organization_id);
 
