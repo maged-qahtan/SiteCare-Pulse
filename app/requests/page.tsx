@@ -33,7 +33,6 @@ type ServiceRequest = {
 };
 type RequestComment = { id: string; request_id: string; user_id: string; body: string; created_at: string };
 type RequestAttachment = { id: string; request_id: string; storage_path: string; file_name: string; content_type: string; size_bytes: number; created_at: string };
-type Membership = { organization_id: string; role: Role; client_account_id: string | null };
 type DbResult<T> = { data: T | null; error: Error | null };
 
 const statusLabels: Record<RequestStatus, string> = {
