@@ -178,6 +178,7 @@ export function LiveDashboardOverview() {
             {activity.map((event) => {
               const labels: Record<string, string> = {
                 "client.created": "Client account created",
+                "client.member_linked": "Client portal access connected",
                 "site.created": "Website registered",
                 "request.created": "Service request created",
                 "request.status_changed": "Request status changed",
