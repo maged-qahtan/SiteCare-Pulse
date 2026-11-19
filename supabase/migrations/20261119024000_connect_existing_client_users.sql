@@ -23,7 +23,7 @@ begin
   clean_email := pg_catalog.lower(pg_catalog.btrim(member_email));
   if clean_email is null
      or pg_catalog.char_length(clean_email) > 254
-     or pg_catalog.position('@' in clean_email) < 2 then
+     or pg_catalog.strpos(clean_email, '@') < 2 then
     raise exception 'Enter a valid account email address';
   end if;
 
