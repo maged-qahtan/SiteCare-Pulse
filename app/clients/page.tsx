@@ -76,13 +76,22 @@ function ClientsContent() {
       const supabase = createClient();
       const { data: userData, error: userError } = await supabase.auth.getUser();
       if (userError || !userData.user) throw userError ?? new Error("Please sign in again.");
-      const { data: membership, error: membershipError } = await supabase
-        .from("organization_members")
+      const membershipQuery = supabase.from("organization_members") as unknown as {
+        select: (columns: string) => {
+          eq: (column: string, value: string) => {
+            limit: (count: number) => {
+              single: () => Promise<{ data: { organization_id: string; role: string } | null; error: Error | null }>;
+            };
+          };
+        };
+      };
+      const { data: membership, error: membershipError } = await membershipQuery
         .select("organization_id,role")
         .eq("user_id", userData.user.id)
         .limit(1)
         .single();
       if (membershipError) throw membershipError;
+      if (!membership) throw new Error("No agency workspace membership was found.");
       if (membership.role === "client") throw new Error("Client accounts cannot create other client accounts.");
       const cleanWebsite = website.trim()
         ? (/^https?:\/\//i.test(website.trim()) ? website.trim() : `https://${website.trim()}`)
