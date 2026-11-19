@@ -308,14 +308,18 @@ function RequestsContent() {
 
   async function downloadAttachment(attachment: RequestAttachment) {
     setError("");
+    const previewWindow = window.open("", "_blank");
+    if (previewWindow) previewWindow.opener = null;
     try {
       const supabase = createClient();
       const { data, error: signedUrlError } = await supabase.storage
         .from("request-evidence")
         .createSignedUrl(attachment.storage_path, 60);
       if (signedUrlError) throw signedUrlError;
-      window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+      if (previewWindow) previewWindow.location.href = data.signedUrl;
+      else window.location.assign(data.signedUrl);
     } catch (caught) {
+      previewWindow?.close();
       setError(caught instanceof Error ? caught.message : "Unable to open this attachment.");
     }
   }
