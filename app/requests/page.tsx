@@ -1,9 +1,9 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import {
-  Activity, ArrowLeft, CalendarClock, CircleAlert, Clock3, LoaderCircle,
-  MessageSquare, Plus, RefreshCw, Send, Wrench
+  Activity, ArrowLeft, CalendarClock, CircleAlert, Clock3, Download, FileText, LoaderCircle,
+  MessageSquare, Paperclip, Plus, RefreshCw, Send, Wrench
 } from "lucide-react";
 import Link from "next/link";
 import { AuthGuard } from "@/components/auth-guard";
@@ -27,6 +27,7 @@ type ServiceRequest = {
   created_at: string;
 };
 type RequestComment = { id: string; request_id: string; user_id: string; body: string; created_at: string };
+type RequestAttachment = { id: string; request_id: string; storage_path: string; file_name: string; content_type: string; size_bytes: number; created_at: string };
 type Membership = { organization_id: string; role: Role; client_account_id: string | null };
 type DbResult<T> = { data: T | null; error: Error | null };
 
@@ -41,6 +42,8 @@ const priorityLabels: Record<Priority, string> = {
 function RequestsContent() {
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
   const [comments, setComments] = useState<RequestComment[]>([]);
+  const [attachments, setAttachments] = useState<RequestAttachment[]>([]);
+  const [uploadingRequestId, setUploadingRequestId] = useState<string | null>(null);
   const [commentDrafts, setCommentDrafts] = useState<Record<string, string>>({});
   const [clients, setClients] = useState<ClientAccount[]>([]);
   const [sites, setSites] = useState<Site[]>([]);
@@ -105,6 +108,13 @@ function RequestsContent() {
           };
         };
       };
+      const attachmentTable = supabase.from("request_attachments") as unknown as {
+        select: (columns: string) => {
+          eq: (column: string, value: string) => {
+            order: (column: string, options: { ascending: boolean }) => Promise<DbResult<RequestAttachment[]>>;
+          };
+        };
+      };
       const commentTable = supabase.from("request_comments") as unknown as {
         select: (columns: string) => {
           eq: (column: string, value: string) => {
@@ -113,24 +123,28 @@ function RequestsContent() {
         };
       };
 
-      const [clientResult, siteResult, requestResult, commentResult] = await Promise.all([
+      const [clientResult, siteResult, requestResult, commentResult, attachmentResult] = await Promise.all([
         clientTable.select("id,name,status").eq("organization_id", membership.organization_id).order("name", { ascending: true }),
         siteTable.select("id,client_account_id,name,url,platform").eq("organization_id", membership.organization_id).order("name", { ascending: true }),
         requestTable.select("id,client_account_id,site_id,title,description,priority,status,due_at,created_at")
           .eq("organization_id", membership.organization_id).order("created_at", { ascending: false }),
         commentTable.select("id,request_id,user_id,body,created_at")
-          .eq("organization_id", membership.organization_id).order("created_at", { ascending: true })
+          .eq("organization_id", membership.organization_id).order("created_at", { ascending: true }),
+        attachmentTable.select("id,request_id,storage_path,file_name,content_type,size_bytes,created_at")
+          .eq("organization_id", membership.organization_id).order("created_at", { ascending: false })
       ]);
       if (clientResult.error) throw clientResult.error;
       if (siteResult.error) throw siteResult.error;
       if (requestResult.error) throw requestResult.error;
       if (commentResult.error) throw commentResult.error;
+      if (attachmentResult.error) throw attachmentResult.error;
 
       const visibleClients = (clientResult.data ?? []) as ClientAccount[];
       setClients(visibleClients);
       setSites((siteResult.data ?? []) as Site[]);
       setRequests((requestResult.data ?? []) as ServiceRequest[]);
       setComments((commentResult.data ?? []) as RequestComment[]);
+      setAttachments((attachmentResult.data ?? []) as RequestAttachment[]);
       if (membership.client_account_id) setClientId(membership.client_account_id);
       else if (!clientId && visibleClients[0]) setClientId(visibleClients[0].id);
     } catch (caught) {
@@ -226,6 +240,86 @@ function RequestsContent() {
     }
   }
 
+  async function handleUploadAttachment(event: ChangeEvent<HTMLInputElement>, requestId: string) {
+    const file = event.currentTarget.files?.[0];
+    event.currentTarget.value = "";
+    if (!file) return;
+
+    const allowedTypes = ["image/png", "image/jpeg", "image/webp", "application/pdf"];
+    if (!allowedTypes.includes(file.type)) {
+      setError("Upload a PNG, JPG, WebP image, or PDF file.");
+      return;
+    }
+    if (file.size < 1 || file.size > 10 * 1024 * 1024) {
+      setError("Each attachment must be smaller than 10 MB.");
+      return;
+    }
+
+    setUploadingRequestId(requestId);
+    setError("");
+    setNotice("");
+    let uploadedPath = "";
+    try {
+      const supabase = createClient();
+      const { data: authData, error: authError } = await supabase.auth.getUser();
+      if (authError || !authData.user) throw authError ?? new Error("Please sign in again.");
+
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]+/g, "_").slice(0, 100) || "evidence";
+      uploadedPath = `${organizationId}/${requestId}/${crypto.randomUUID()}-${safeName}`;
+      const { error: uploadError } = await supabase.storage.from("request-evidence").upload(uploadedPath, file, {
+        contentType: file.type,
+        upsert: false
+      });
+      if (uploadError) throw uploadError;
+
+      const attachmentTable = supabase.from("request_attachments") as unknown as {
+        insert: (values: {
+          organization_id: string;
+          request_id: string;
+          uploaded_by: string;
+          storage_path: string;
+          file_name: string;
+          content_type: string;
+          size_bytes: number;
+        }) => Promise<{ error: Error | null }>;
+      };
+      const { error: metadataError } = await attachmentTable.insert({
+        organization_id: organizationId,
+        request_id: requestId,
+        uploaded_by: authData.user.id,
+        storage_path: uploadedPath,
+        file_name: file.name.slice(0, 255),
+        content_type: file.type,
+        size_bytes: file.size
+      });
+      if (metadataError) {
+        await supabase.storage.from("request-evidence").remove([uploadedPath]);
+        throw metadataError;
+      }
+
+      setNotice("Evidence attached to the request.");
+      await loadWorkspace();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Unable to upload this attachment.");
+    } finally {
+      setUploadingRequestId(null);
+    }
+  }
+
+  async function downloadAttachment(attachment: RequestAttachment) {
+    setError("");
+    try {
+      const supabase = createClient();
+      const { data, error: signedUrlError } = await supabase.storage
+        .from("request-evidence")
+        .createSignedUrl(attachment.storage_path, 60);
+      if (signedUrlError) throw signedUrlError;
+      window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Unable to open this attachment.");
+    }
+  }
+
   async function updateStatus(requestId: string, nextStatus: RequestStatus) {
     setError("");
     setNotice("");
@@ -285,6 +379,19 @@ function RequestsContent() {
                   <input value={commentDrafts[request.id] ?? ""} onChange={event => setCommentDrafts(current => ({ ...current, [request.id]: event.target.value }))} maxLength={3000} placeholder="Write an update..." aria-label="Write an update" className="min-w-0 flex-1 rounded-lg border border-line px-3 py-2 text-[11px] outline-none focus:border-brand" />
                   <button type="submit" disabled={!(commentDrafts[request.id] ?? "").trim()} aria-label="Add comment" className="rounded-lg bg-brand px-3 text-white disabled:opacity-40"><Send size={13} /></button>
                 </form>
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex flex-wrap gap-2">
+                    {attachments.filter(attachment => attachment.request_id === request.id).map(attachment => (
+                      <button key={attachment.id} type="button" onClick={() => void downloadAttachment(attachment)} className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-white px-2.5 py-1.5 text-[10px] font-semibold text-muted hover:border-brand hover:text-brand">
+                        <FileText size={12} /> {attachment.file_name} <span className="text-slate-400">({Math.max(1, Math.round(attachment.size_bytes / 1024))} KB)</span> <Download size={11} />
+                      </button>
+                    ))}
+                  </div>
+                  <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-[#edf4f0] px-3 py-2 text-[10px] font-bold text-brand hover:bg-[#e2eee8]">
+                    <Paperclip size={12} /> {uploadingRequestId === request.id ? "Uploading..." : "Attach evidence"}
+                    <input type="file" accept="image/png,image/jpeg,image/webp,application/pdf" className="sr-only" disabled={uploadingRequestId === request.id} onChange={event => void handleUploadAttachment(event, request.id)} />
+                  </label>
+                </div>
               </div>
             </article>)}</div>}
           </section>
