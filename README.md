@@ -40,7 +40,7 @@ Those test records were rolled back; no test customer data was retained.
 
 The workspace-creation RPC is exposed as a `SECURITY INVOKER` wrapper; its hardened `SECURITY DEFINER` implementation lives in the non-exposed `private` schema. The latest Supabase security advisor no longer reports that function. One warning remains: leaked-password protection is disabled in Supabase Auth; enable it in the Supabase dashboard before production customer onboarding. The performance advisor currently reports unused indexes because the database has not yet had real workload; review them after usage data exists.
 
-**Important:** These checks are not a complete security certification or full end-to-end test suite. Before real customer data is used, add automated tests for every role and every read/write policy, validate the organization-creation RPC, and enable leaked-password protection in Supabase Auth.
+**Important:** These checks are not a complete security certification or full end-to-end test suite. Before real customer data is used, add automated tests for every role and every read/write policy, validate the organization-creation RPC, and revisit leaked-password protection only if the product later moves to a paid Supabase plan.
 
 ## Static deployment and authentication
 
