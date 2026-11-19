@@ -124,7 +124,7 @@ function ClientsContent() {
               {notice && <p role="status" className="rounded-lg bg-emerald-50 px-3 py-2.5 text-xs leading-5 text-emerald-700">{notice}</p>}
               <button disabled={saving || !name.trim()} className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-4 py-3 text-xs font-bold text-white hover:bg-brand-dark disabled:opacity-60">{saving ? <LoaderCircle size={15} className="animate-spin" /> : <Plus size={15} />}{saving ? "Saving..." : "Create client account"}</button>
             </form>
-            <p className="mt-4 text-[10px] leading-5 text-muted">Client data is protected by your workspace's database access policies.</p>
+            <p className="mt-4 text-[10px] leading-5 text-muted">Client data is protected by your workspace&apos;s database access policies.</p>
           </aside>
         </div>
       </main>
