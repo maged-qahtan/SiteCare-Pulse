@@ -6,9 +6,9 @@ SiteCare Pulse helps website agencies coordinate client requests, delivery work,
 
 ## Current status
 
-The repository contains the initial dashboard UI and a sample-data preview. A Supabase Free project is provisioned and the database migrations are applied. The app now includes browser-based Supabase Auth sign-in/sign-up foundations, agency onboarding, client account management, website portfolio management, service request creation and status management, and request discussion comments. The dashboard still contains clearly labeled illustrative sample metrics. Next.js is configured for static export so it can be hosted on Cloudflare Pages Free. The app is **not yet connected to live deployment credentials or tested with a real signup or end-to-end user session**.
+The application is deployed on Cloudflare Pages Free and connected to a Supabase Free project. A real owner account has successfully signed in, created an agency workspace, and created one client account. The live client-account and request pages have been opened against the database. The app includes browser-based Supabase Auth, agency onboarding, client account management, website portfolio management, service request creation and status management, and request discussion comments. The dashboard metrics and sample request queue remain illustrative and are not connected to live records.
 
-Email delivery, production deployment, client-facing workflows, monitoring services, and billing are not configured.
+This is an early working MVP, not yet a production-ready commercial SaaS. The complete end-to-end workflow still needs verification, including registering a valid website, creating and updating a request, comments, client-role access, password recovery, and automated tenant-isolation tests. Activity history, SLA automation, evidence attachments, monthly reports, team invitations, and billing are not yet implemented.
 
 ## Product principles
 
@@ -82,10 +82,10 @@ All figures, names, requests, dates, and performance metrics currently shown in 
 
 ## Planned development stages
 
-1. Deploy the app on a free hosting tier that permits the intended use.
-2. Add the Supabase URL and publishable key as deployment environment variables.
-3. Configure Supabase Auth site and redirect URLs; test signup, email confirmation, login, and logout.
-4. Implement organization onboarding using the `create_organization` RPC.
-5. Add automated role-based RLS tests and run authenticated end-to-end tests against the deployed app.
-6. Implement activity history, SLA rules, evidence attachments, and monthly reports.
+1. Complete authenticated end-to-end tests for the deployed owner and client workflows.
+2. Register and verify a valid website, then test request creation, status changes, and comments.
+3. Add automated role-based RLS tests for every table and operation, including cross-tenant isolation.
+4. Implement activity history and SLA rules with auditable timestamps and status transitions.
+5. Add secure evidence attachments and client-ready monthly reports.
+6. Add team invitations and a dedicated client portal experience.
 7. Validate payment availability and billing only after the product is ready.
