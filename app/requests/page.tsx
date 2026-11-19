@@ -168,6 +168,17 @@ function RequestsContent() {
     () => new Map(sites.map(site => [site.id, site.name])),
     [sites]
   );
+  const filteredRequests = useMemo(() => {
+    const query = requestSearch.trim().toLowerCase();
+    return requests.filter(request => {
+      const matchesStatus = statusFilter === "all" || request.status === statusFilter;
+      const matchesSearch = !query
+        || request.title.toLowerCase().includes(query)
+        || request.description.toLowerCase().includes(query)
+        || (clientNames.get(request.client_account_id) ?? "").toLowerCase().includes(query);
+      return matchesStatus && matchesSearch;
+    });
+  }, [requests, requestSearch, statusFilter, clientNames]);
 
   async function handleCreate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
