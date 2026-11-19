@@ -11,7 +11,7 @@ Updated: 2026-11-20
 
 ## Security change
 
-Migration `20261120100000_owner_only_admin_grants_rls.sql` adds `private.is_org_owner(uuid)` and tightens INSERT/UPDATE RLS policies on `public.organization_members`. Only owners may grant or retain the `admin` role through direct table writes; admins can continue managing non-owner, non-admin members subject to existing helper rules. The migration does not modify membership rows.
+Migration `20261119230608_owner_only_admin_grants_rls.sql` adds `private.is_org_owner(uuid)` and tightens INSERT/UPDATE RLS policies on `public.organization_members`. Only owners may grant or retain the `admin` role through direct table writes; admins can continue managing non-owner, non-admin members subject to existing helper rules. The migration does not modify membership rows.
 
 Verification performed after migration:
 - Confirmed policy definitions include owner-only checks for admin grants.
