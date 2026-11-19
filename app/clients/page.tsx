@@ -76,7 +76,7 @@ function ClientsContent() {
       if (membershipError) throw membershipError;
       if (membership.role === "client") throw new Error("Client accounts cannot create other client accounts.");
       const cleanWebsite = website.trim()
-        ? (/^https?:\\/\\//i.test(website.trim()) ? website.trim() : `https://${website.trim()}`)
+        ? (/^https?:\/\//i.test(website.trim()) ? website.trim() : `https://${website.trim()}`)
         : null;
       const { error: insertError } = await supabase.from("client_accounts").insert({
         organization_id: membership.organization_id,
