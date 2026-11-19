@@ -145,6 +145,7 @@ export default function LoginPage() {
           </form>
 
           {mode === "signin" && !isResetting && <button type="button" onClick={() => { setIsResetting(true); setError(""); setMessage(""); }} className="mt-4 w-full text-center text-xs font-semibold text-brand hover:underline">Forgot password?</button>}
+          <p className="mt-5 rounded-xl bg-[#f5f8f6] px-3 py-2.5 text-[10px] leading-5 text-muted">Free-preview email limitation: Supabase&apos;s default mailer only delivers to project team addresses. External client sign-up and password reset need a custom SMTP provider.</p>
           <div className="mt-6 border-t border-line pt-5 text-center text-xs text-muted">
             {isResetting ? "Remembered your password?" : mode === "signin" ? "New to SiteCare Pulse?" : "Already have an account?"}{" "}
             <button
