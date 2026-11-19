@@ -6,9 +6,9 @@ SiteCare Pulse helps website agencies coordinate client requests, delivery work,
 
 ## Current status
 
-The application is deployed on Cloudflare Pages Free and connected to a Supabase Free project. A real owner account has successfully signed in, created an agency workspace, and created one client account. The live client-account and request pages have been opened against the database. The app includes browser-based Supabase Auth (including password-reset flow), agency onboarding, client account management, website portfolio management, service request creation and status management, request discussion comments, automatic activity history, and a monthly CSV work-report export. The public product landing page is at `/`, and the authenticated workspace dashboard is at `/dashboard/`. The dashboard summary reads live client, website, open-request, and resolved-request counts from Supabase. The latest-request list and activity history also use live records; no sample customer metrics are presented as real.
+The application is deployed on Cloudflare Pages Free and connected to a Supabase Free project. A real owner account has successfully signed in, created an agency workspace, and created one client account. The live client-account and request pages have been opened against the database. The app includes browser-based Supabase Auth (including password-reset flow), agency onboarding, client account management, website portfolio management, service request creation and status management, request discussion comments, private evidence attachments, automatic activity history, and a monthly CSV work-report export. The public product landing page is at `/`, and the authenticated workspace dashboard is at `/dashboard/`. The dashboard summary reads live client, website, open-request, and resolved-request counts from Supabase. The latest-request list and activity history also use live records; no sample customer metrics are presented as real.
 
-This is an early working MVP, not yet a production-ready commercial SaaS. The complete end-to-end workflow still needs verification, including registering a valid website, creating and updating a request, comments, client-role access, password recovery email delivery, and automated tenant-isolation tests. Automatic activity history is implemented for client creation, website registration, request creation and updates, and request comments. A monthly activity CSV export is available. SLA automation and breach notifications, evidence attachments, branded PDF reports, team invitations, and billing are not yet implemented.
+This is an early working MVP, not yet a production-ready commercial SaaS. The complete end-to-end workflow still needs verification, including registering a valid website, creating and updating a request, comments, client-role access, password recovery email delivery, and automated tenant-isolation tests. Automatic activity history is implemented for client creation, website registration, request creation and updates, and request comments. A monthly activity CSV export is available. SLA automation and breach notifications, branded PDF reports, team invitations, and billing are not yet implemented.
 
 ## Product principles
 
@@ -30,7 +30,7 @@ The Supabase database currently records these applied migration versions, and th
 6. `20261119021837_activity_event_triggers.sql` — automatically records key workspace activity in the activity_events table.
 7. `20261119022422_enrich_activity_event_details.sql` — includes client references in request and comment events for accurate reporting.
 8. `20261119022628_move_create_organization_definer_private.sql` — moves the SECURITY DEFINER implementation into the non-exposed private schema and leaves a SECURITY INVOKER RPC wrapper in public.
-9. `20261119023219_harden_private_rls_helper_search_paths.sql` — hardens all private RLS helper function search paths.
+9. `20261119023219_harden_private_rls_helper_search_paths.sql` — hardens all private RLS helper function search paths.\n10. `20261119023313_request_evidence_storage.sql` — adds a private evidence bucket, attachment metadata table, and tenant-scoped storage policies.\n11. `20261119023331_log_request_attachment_activity.sql` — records evidence uploads in the request activity history.
 
 Temporary transaction-based SQL checks confirmed:
 - An organization owner can see both test client accounts and is recognized as an admin.
@@ -91,6 +91,6 @@ The authenticated dashboard metrics, request queue, and activity history use liv
 2. Register and verify a valid website, then test request creation, status changes, comments, activity history, and CSV export.
 3. Add automated role-based RLS tests for every table and operation, including cross-tenant isolation.
 4. Implement configurable SLA policies, response/resolution timers, and breach notifications.
-5. Add secure evidence attachments and branded PDF reports.
+5. Add branded PDF reports.
 6. Add team invitations and a more complete client portal experience.
 7. Validate payment availability, pricing, and billing only after the product is ready.
