@@ -95,9 +95,21 @@ function ClientsContent() {
       if (membershipError) throw membershipError;
       if (!membership) throw new Error("No agency workspace membership was found.");
       if (membership.role === "client") throw new Error("Client accounts cannot create other client accounts.");
-      const cleanWebsite = website.trim()
-        ? (/^https?:\/\//i.test(website.trim()) ? website.trim() : `https://${website.trim()}`)
+      const rawWebsite = website.trim();
+      const cleanWebsite = rawWebsite
+        ? (/^https?:\/\//i.test(rawWebsite) ? rawWebsite : `https://${rawWebsite}`)
         : null;
+      if (cleanWebsite) {
+        let parsedWebsite: URL;
+        try {
+          parsedWebsite = new URL(cleanWebsite);
+        } catch {
+          throw new Error("Enter a valid website address, such as example.com.");
+        }
+        if (!["http:", "https:"].includes(parsedWebsite.protocol) || !parsedWebsite.hostname.includes(".")) {
+          throw new Error("Enter a valid public website domain, such as example.com.");
+        }
+      }
       const clientAccounts = supabase.from("client_accounts") as unknown as {
         insert: (values: {
           organization_id: string;
