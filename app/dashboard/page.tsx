@@ -70,6 +70,14 @@ export default function Home() {
             </div>
           </header>
 
+          <nav aria-label="Workspace navigation" className="flex gap-2 overflow-x-auto border-b border-line bg-white px-4 py-3 lg:hidden">
+            <Link href="/dashboard/" className="shrink-0 rounded-lg bg-[#edf4f0] px-3 py-2 text-[11px] font-bold text-brand">Overview</Link>
+            <Link href="/clients/" className="shrink-0 rounded-lg px-3 py-2 text-[11px] font-semibold text-muted">Clients</Link>
+            <Link href="/sites/" className="shrink-0 rounded-lg px-3 py-2 text-[11px] font-semibold text-muted">Websites</Link>
+            <Link href="/requests/" className="shrink-0 rounded-lg px-3 py-2 text-[11px] font-semibold text-muted">Requests</Link>
+            <Link href="/reports/" className="shrink-0 rounded-lg px-3 py-2 text-[11px] font-semibold text-muted">Reports</Link>
+          </nav>
+
           <div className="mx-auto max-w-[1440px] px-8 py-8">
             <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
               <div>
