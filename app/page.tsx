@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { SignOutButton } from "@/components/sign-out-button";
 import { AuthGuard } from "@/components/auth-guard";
+import { LiveDashboardOverview } from "@/components/live-dashboard-overview";
 
 import {
   Activity,
@@ -32,24 +33,6 @@ const navItems = [
   { label: "Requests & tasks", icon: Wrench },
 ];
 
-const requests = [
-  { initials: "NB", name: "Northstar Boutique", task: "Checkout page showing an error", priority: "High", status: "In progress", due: "Today, 2:30 PM", tone: "rose" },
-  { initials: "AC", name: "Atlas Consulting", task: "Update team profile and service pages", priority: "Normal", status: "Waiting on client", due: "Tomorrow", tone: "amber" },
-  { initials: "GM", name: "Greenfield Medical", task: "Monthly plugin and security review", priority: "Normal", status: "Scheduled", due: "Nov 21", tone: "blue" },
-  { initials: "SL", name: "Studio Lumen", task: "Mobile navigation menu overlaps content", priority: "Urgent", status: "In progress", due: "Today, 11:00 AM", tone: "violet" }
-];
-
-function Badge({ children, tone = "green" }: { children: React.ReactNode; tone?: string }) {
-  const styles: Record<string, string> = {
-    green: "bg-emerald-50 text-emerald-700",
-    rose: "bg-rose-50 text-rose-700",
-    amber: "bg-amber-50 text-amber-700",
-    blue: "bg-sky-50 text-sky-700",
-    violet: "bg-violet-50 text-violet-700"
-  };
-  return <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold ${styles[tone] ?? styles.green}`}>{children}</span>;
-}
-
 export default function Home() {
   return (
     <AuthGuard>
@@ -64,7 +47,7 @@ export default function Home() {
           {navItems.map((item) => {
             const Icon = item.icon;
             const href = item.label === "Client accounts" ? "/clients/" : item.label === "Websites" ? "/sites/" : item.label === "Requests & tasks" ? "/requests/" : "/";
-            return <Link key={item.label} href={href} className={`sidebar-link ${item.active ? "active" : ""}`}><Icon size={17} />{item.label}{item.label === "Requests & tasks" && <span className="ml-auto rounded-full bg-white px-2 py-0.5 text-[10px] text-slate-500">8</span>}</Link>;
+            return <Link key={item.label} href={href} className={`sidebar-link ${item.active ? "active" : ""}`}><Icon size={17} />{item.label}{item.label === "Requests & tasks"}</Link>;
           })}
         </nav>
         <div className="mt-auto rounded-2xl bg-[#f5f8f6] p-4">
@@ -95,32 +78,13 @@ export default function Home() {
 
         <div className="mx-auto max-w-[1440px] px-8 py-8">
           <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
-            <div><div className="mb-2 flex items-center gap-2 text-xs font-semibold text-brand"><span className="status-dot" /> DASHBOARD PREVIEW · SAMPLE DATA</div><h1 className="text-2xl font-bold tracking-tight text-ink">Good morning, Admin <span>👋</span></h1><p className="mt-1.5 text-sm text-muted">Here’s what’s happening across your client websites today.</p></div>
+            <div><div className="mb-2 flex items-center gap-2 text-xs font-semibold text-brand"><span className="status-dot" /> LIVE WORKSPACE · REAL DATA</div><h1 className="text-2xl font-bold tracking-tight text-ink">Good morning, Admin <span>👋</span></h1><p className="mt-1.5 text-sm text-muted">Live activity and service metrics from your agency workspace.</p></div>
             <Link href="/requests/" className="inline-flex items-center gap-2 rounded-xl bg-brand px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-brand-dark"><Plus size={16} /> New request</Link>
           </div>
 
-          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <div className="metric-card"><div className="flex items-center justify-between text-xs font-semibold text-muted"><span>Active clients</span><BriefcaseBusiness size={17} className="text-slate-400" /></div><div className="mt-4 flex items-end justify-between"><div className="text-3xl font-bold tracking-tight text-ink">24</div><span className="mb-1 inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600"><ArrowUpRight size={13} /> 12.5%</span></div><div className="mt-2 text-[11px] text-muted">Compared to last month</div></div>
-            <div className="metric-card"><div className="flex items-center justify-between text-xs font-semibold text-muted"><span>Open requests</span><LifeBuoy size={17} className="text-slate-400" /></div><div className="mt-4 flex items-end justify-between"><div className="text-3xl font-bold tracking-tight text-ink">08</div><span className="mb-1 inline-flex items-center gap-1 text-[11px] font-bold text-rose-600"><ArrowDownRight size={13} /> 4.2%</span></div><div className="mt-2 text-[11px] text-muted">2 urgent requests need attention</div></div>
-            <div className="metric-card"><div className="flex items-center justify-between text-xs font-semibold text-muted"><span>Resolved this month</span><CheckCircle2 size={17} className="text-slate-400" /></div><div className="mt-4 flex items-end justify-between"><div className="text-3xl font-bold tracking-tight text-ink">36</div><span className="mb-1 inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600"><ArrowUpRight size={13} /> 18.0%</span></div><div className="mt-2 text-[11px] text-muted">Across all client accounts</div></div>
-            <div className="metric-card"><div className="flex items-center justify-between text-xs font-semibold text-muted"><span>SLA response rate</span><ShieldCheck size={17} className="text-slate-400" /></div><div className="mt-4 flex items-end justify-between"><div className="text-3xl font-bold tracking-tight text-ink">96.8<span className="text-xl">%</span></div><span className="mb-1 text-[11px] font-bold text-emerald-600">On target</span></div><div className="mt-2 text-[11px] text-muted">Within agreed response times</div></div>
-          </section>
+          <LiveDashboardOverview />
 
-          <section className="mt-6 grid gap-5 xl:grid-cols-[1.65fr_1fr]">
-            <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-card">
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-4"><div><h2 className="text-sm font-bold text-ink">Request queue</h2><p className="mt-1 text-[11px] text-muted">Track work across your client accounts</p></div><Link href="/requests/" className="text-xs font-bold text-brand">View all requests →</Link></div>
-              <div className="overflow-x-auto"><table className="w-full min-w-[650px] text-left"><thead className="bg-[#fafcfb] text-[10px] font-bold uppercase tracking-wider text-slate-400"><tr><th className="px-5 py-3">Client / Request</th><th className="px-4 py-3">Priority</th><th className="px-4 py-3">Status</th><th className="px-4 py-3">Due date</th></tr></thead><tbody className="divide-y divide-line">{requests.map((request) => <tr key={request.name} className="hover:bg-slate-50/60"><td className="px-5 py-4"><div className="flex items-center gap-3"><div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#edf4f0] text-[10px] font-bold text-[#376b58]">{request.initials}</div><div><div className="text-xs font-bold text-ink">{request.name}</div><div className="mt-1 text-[11px] text-muted">{request.task}</div></div></div></td><td className="px-4 py-4"><Badge tone={request.priority === "Urgent" ? "violet" : request.priority === "High" ? "rose" : "blue"}>{request.priority}</Badge></td><td className="px-4 py-4"><Badge tone={request.status === "In progress" ? "green" : request.status === "Waiting on client" ? "amber" : "blue"}>{request.status}</Badge></td><td className="px-4 py-4 text-[11px] font-medium text-muted">{request.due}</td></tr>)}</tbody></table></div>
-              <div className="flex items-center justify-between border-t border-line px-5 py-3 text-[10px] text-muted"><span>Showing 4 of 8 open requests</span><span>Illustrative sample data</span></div>
-            </div>
-
-            <div className="space-y-5">
-              <div className="rounded-2xl border border-line bg-white p-5 shadow-card"><div className="flex items-center justify-between"><div><h2 className="text-sm font-bold text-ink">SLA health</h2><p className="mt-1 text-[11px] text-muted">Response time performance</p></div><ShieldCheck size={19} className="text-brand" /></div><div className="mt-5 flex items-end justify-between"><div><div className="text-3xl font-bold tracking-tight text-ink">96.8%</div><div className="mt-1 text-[11px] text-emerald-600">+2.4% from last month</div></div><div className="text-right text-[10px] text-muted">Monthly target<br/><strong className="text-ink">95%</strong></div></div><div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full w-[96.8%] rounded-full bg-brand" /></div><div className="mt-3 flex justify-between text-[10px] text-muted"><span>0%</span><span>100%</span></div></div>
-
-              <div className="rounded-2xl border border-line bg-white p-5 shadow-card"><div className="flex items-center justify-between"><div><h2 className="text-sm font-bold text-ink">Upcoming deadlines</h2><p className="mt-1 text-[11px] text-muted">What needs attention next</p></div><CalendarClock size={18} className="text-slate-400" /></div><div className="mt-4 space-y-4"><div className="flex gap-3"><div className="flex h-10 w-10 shrink-0 flex-col items-center justify-center rounded-lg bg-rose-50 text-rose-600"><span className="text-[9px] font-bold uppercase">Nov</span><span className="text-sm font-bold">19</span></div><div className="min-w-0 flex-1"><div className="text-xs font-bold text-ink">Checkout issue fix</div><div className="mt-1 text-[10px] text-muted">Northstar Boutique · 2:30 PM</div></div><span className="mt-1 h-2 w-2 rounded-full bg-rose-400" /></div><div className="flex gap-3"><div className="flex h-10 w-10 shrink-0 flex-col items-center justify-center rounded-lg bg-amber-50 text-amber-600"><span className="text-[9px] font-bold uppercase">Nov</span><span className="text-sm font-bold">20</span></div><div className="min-w-0 flex-1"><div className="text-xs font-bold text-ink">Client content review</div><div className="mt-1 text-[10px] text-muted">Atlas Consulting · All day</div></div><span className="mt-1 h-2 w-2 rounded-full bg-amber-400" /></div><div className="flex gap-3"><div className="flex h-10 w-10 shrink-0 flex-col items-center justify-center rounded-lg bg-sky-50 text-sky-600"><span className="text-[9px] font-bold uppercase">Nov</span><span className="text-sm font-bold">21</span></div><div className="min-w-0 flex-1"><div className="text-xs font-bold text-ink">Monthly maintenance</div><div className="mt-1 text-[10px] text-muted">Greenfield Medical · 10:00 AM</div></div><span className="mt-1 h-2 w-2 rounded-full bg-sky-400" /></div></div></div>
-
-              <div className="rounded-2xl bg-[#173f35] p-5 text-white"><div className="flex items-center gap-2 text-emerald-200"><Activity size={16} /><span className="text-[10px] font-bold uppercase tracking-[.14em]">The SiteCare difference</span></div><h3 className="mt-3 text-base font-bold leading-6">Make every hour of care visible.</h3><p className="mt-2 text-[11px] leading-5 text-emerald-100/75">Turn completed work into clear, client-ready proof of the value your agency delivers.</p><div className="mt-4 flex items-center gap-2 text-[10px] font-bold text-emerald-200">Explore monthly reports <ArrowUpRight size={13} /></div></div>
-            </div>
-          </section>
+          
           <footer className="mt-8 flex flex-wrap justify-between gap-2 border-t border-line py-5 text-[10px] text-slate-400"><span>© 2026 SiteCare Pulse. Built for better client care.</span><span>Product preview · Sample data only</span></footer>
         </div>
       </main>
