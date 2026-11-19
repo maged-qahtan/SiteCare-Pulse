@@ -9,6 +9,7 @@ import Link from "next/link";
 import { AuthGuard } from "@/components/auth-guard";
 import { SignOutButton } from "@/components/sign-out-button";
 import { createClient } from "@/lib/supabase/client";
+import { getActiveMembership } from "@/lib/supabase/workspace";
 
 type Role = "owner" | "admin" | "member" | "client";
 type Priority = "low" | "normal" | "high" | "urgent";
@@ -32,7 +33,6 @@ type ServiceRequest = {
 };
 type RequestComment = { id: string; request_id: string; user_id: string; body: string; created_at: string };
 type RequestAttachment = { id: string; request_id: string; storage_path: string; file_name: string; content_type: string; size_bytes: number; created_at: string };
-type Membership = { organization_id: string; role: Role; client_account_id: string | null };
 type DbResult<T> = { data: T | null; error: Error | null };
 
 const statusLabels: Record<RequestStatus, string> = {
@@ -75,18 +75,7 @@ function RequestsContent() {
       const { data: authData, error: authError } = await supabase.auth.getUser();
       if (authError || !authData.user) throw authError ?? new Error("Please sign in again.");
 
-      const memberships = supabase.from("organization_members") as unknown as {
-        select: (columns: string) => {
-          eq: (column: string, value: string) => {
-            limit: (count: number) => { single: () => Promise<DbResult<Membership>> };
-          };
-        };
-      };
-      const { data: membership, error: membershipError } = await memberships
-        .select("organization_id,role,client_account_id")
-        .eq("user_id", authData.user.id).limit(1).single();
-      if (membershipError) throw membershipError;
-      if (!membership) throw new Error("No agency workspace membership was found.");
+      const membership = await getActiveMembership(supabase, authData.user.id);
 
       setRole(membership.role);
       setOrganizationId(membership.organization_id);

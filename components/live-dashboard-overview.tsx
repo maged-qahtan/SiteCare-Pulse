@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { BriefcaseBusiness, Globe2, LifeBuoy, CheckCircle2, LoaderCircle, AlertTriangle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { getActiveMembership } from "@/lib/supabase/workspace";
 
 type Summary = {
   clients: number;
@@ -78,15 +79,7 @@ export function LiveDashboardOverview() {
         const { data: authData, error: authError } = await supabase.auth.getUser();
         if (authError || !authData.user) throw authError ?? new Error("Please sign in again.");
 
-        const { data: membershipData, error: membershipError } = await supabase
-          .from("organization_members")
-          .select("organization_id")
-          .eq("user_id", authData.user.id)
-          .limit(1)
-          .maybeSingle();
-        if (membershipError) throw membershipError;
-        const membership = membershipData as { organization_id: string } | null;
-        if (!membership) throw new Error("No workspace membership was found.");
+        const membership = await getActiveMembership(supabase, authData.user.id);
 
         const monthStart = new Date();
         monthStart.setDate(1);

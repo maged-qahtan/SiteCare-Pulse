@@ -6,6 +6,7 @@ import { Activity, ArrowLeft, Clock3, LoaderCircle, RefreshCw, Save, ShieldCheck
 import { AuthGuard } from "@/components/auth-guard";
 import { SignOutButton } from "@/components/sign-out-button";
 import { createClient } from "@/lib/supabase/client";
+import { getActiveMembership } from "@/lib/supabase/workspace";
 
 type Priority = "urgent" | "high" | "normal" | "low";
 type Policy = {
@@ -14,7 +15,6 @@ type Policy = {
   resolution_minutes: number;
   active: boolean;
 };
-type Membership = { organization_id: string; role: string };
 
 const priorities: { value: Priority; label: string; description: string }[] = [
   { value: "urgent", label: "Urgent", description: "Critical incidents and severe outages" },
@@ -52,15 +52,7 @@ function SlaSettingsContent() {
       const supabase = createClient();
       const { data: authData, error: authError } = await supabase.auth.getUser();
       if (authError || !authData.user) throw authError ?? new Error("Please sign in again.");
-      const { data: membershipData, error: membershipError } = await supabase
-        .from("organization_members")
-        .select("organization_id,role")
-        .eq("user_id", authData.user.id)
-        .limit(1)
-        .maybeSingle();
-      if (membershipError) throw membershipError;
-      const membership = membershipData as Membership | null;
-      if (!membership) throw new Error("No workspace membership was found.");
+      const membership = await getActiveMembership(supabase, authData.user.id);
       setOrganizationId(membership.organization_id);
       setRole(membership.role);
       if (membership.role === "client") throw new Error("SLA settings are available to workspace staff only.");

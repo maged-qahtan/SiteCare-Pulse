@@ -6,6 +6,7 @@ import Link from "next/link";
 import { AuthGuard } from "@/components/auth-guard";
 import { SignOutButton } from "@/components/sign-out-button";
 import { createClient } from "@/lib/supabase/client";
+import { getActiveMembership } from "@/lib/supabase/workspace";
 
 type ClientAccount = {
   id: string;
@@ -38,22 +39,7 @@ function ClientsContent() {
       const supabase = createClient();
       const { data: userData, error: userError } = await supabase.auth.getUser();
       if (userError || !userData.user) throw userError ?? new Error("Please sign in again.");
-      const membershipQuery = supabase.from("organization_members") as unknown as {
-        select: (columns: string) => {
-          eq: (column: string, value: string) => {
-            limit: (count: number) => {
-              single: () => Promise<{ data: { organization_id: string; role: string } | null; error: Error | null }>;
-            };
-          };
-        };
-      };
-      const { data: membership, error: membershipError } = await membershipQuery
-        .select("organization_id,role")
-        .eq("user_id", userData.user.id)
-        .limit(1)
-        .single();
-      if (membershipError) throw membershipError;
-      if (!membership) throw new Error("No agency workspace membership was found.");
+      const membership = await getActiveMembership(supabase, userData.user.id);
       setRole(membership.role);
       setOrganizationId(membership.organization_id);
       const { data, error: clientsError } = await supabase
@@ -85,22 +71,7 @@ function ClientsContent() {
       const supabase = createClient();
       const { data: userData, error: userError } = await supabase.auth.getUser();
       if (userError || !userData.user) throw userError ?? new Error("Please sign in again.");
-      const membershipQuery = supabase.from("organization_members") as unknown as {
-        select: (columns: string) => {
-          eq: (column: string, value: string) => {
-            limit: (count: number) => {
-              single: () => Promise<{ data: { organization_id: string; role: string } | null; error: Error | null }>;
-            };
-          };
-        };
-      };
-      const { data: membership, error: membershipError } = await membershipQuery
-        .select("organization_id,role")
-        .eq("user_id", userData.user.id)
-        .limit(1)
-        .single();
-      if (membershipError) throw membershipError;
-      if (!membership) throw new Error("No agency workspace membership was found.");
+      const membership = await getActiveMembership(supabase, userData.user.id);
       if (membership.role === "client") throw new Error("Client accounts cannot create other client accounts.");
       const rawWebsite = website.trim();
       const cleanWebsite = rawWebsite

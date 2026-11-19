@@ -6,9 +6,9 @@ import { Activity, ArrowLeft, LoaderCircle, Plus, RefreshCw, Users, ShieldCheck 
 import { AuthGuard } from "@/components/auth-guard";
 import { SignOutButton } from "@/components/sign-out-button";
 import { createClient } from "@/lib/supabase/client";
+import { getActiveMembership } from "@/lib/supabase/workspace";
 
 type TeamMember = { user_id: string; email: string; role: "owner" | "admin" | "member"; created_at: string };
-type Membership = { organization_id: string; role: string };
 
 function TeamContent() {
   const [members,setMembers] = useState<TeamMember[]>([]);
@@ -25,23 +25,20 @@ function TeamContent() {
     setLoading(true);
     setError("");
     try {
-      const supabase = createClient() as unknown as {
-        auth: { getUser: () => Promise<{data:{user:{id:string}|null};error:Error|null}> };
-        from: (table:string) => { select:(columns:string)=>{eq:(column:string,value:string)=>{limit:(n:number)=>{maybeSingle:()=>Promise<{data:Membership|null;error:Error|null}>}}} };
-        rpc: (name:string,args:{target_org:string}) => Promise<{data:TeamMember[]|null;error:Error|null}>;
-      };
+      const supabase = createClient();
       const {data:authData,error:authError}=await supabase.auth.getUser();
       if(authError||!authData.user) throw authError??new Error("Please sign in again.");
-      const {data:membership,error:membershipError}=await supabase.from("organization_members").select("organization_id,role").eq("user_id",authData.user.id).limit(1).maybeSingle();
-      if(membershipError) throw membershipError;
-      if(!membership) throw new Error("No workspace membership was found.");
+      const membership = await getActiveMembership(supabase, authData.user.id);
+      const teamClient = supabase as unknown as {
+        rpc: (name:string,args:{target_org:string}) => Promise<{data:TeamMember[]|null;error:Error|null}>;
+      };
       setOrganizationId(membership.organization_id);
       setRole(membership.role);
       if(membership.role==="client") {
         setMembers([]);
         return;
       }
-      const {data,error:listError}=await supabase.rpc("list_team_members",{target_org:membership.organization_id});
+      const {data,error:listError}=await teamClient.rpc("list_team_members",{target_org:membership.organization_id});
       if(listError) throw listError;
       setMembers(data??[]);
     } catch(caught) {
