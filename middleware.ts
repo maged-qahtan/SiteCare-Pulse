@@ -29,8 +29,8 @@ export async function middleware(request: NextRequest) {
   });
 
   // Verify the signed-in user's claims before allowing access to protected routes.
-  const { data: { claims } } = await supabase.auth.getClaims();
-  const isAuthenticated = Boolean(claims?.sub);
+  const { data: claimsData, error: claimsError } = await supabase.auth.getClaims();
+  const isAuthenticated = !claimsError && Boolean(claimsData?.claims?.sub);
   const isLoginPage = request.nextUrl.pathname === "/login";
   const isAuthCallback = request.nextUrl.pathname.startsWith("/auth/");
 
