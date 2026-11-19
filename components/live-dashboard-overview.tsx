@@ -192,6 +192,7 @@ export function LiveDashboardOverview() {
               const labels: Record<string, string> = {
                 "client.created": "Client account created",
                 "client.member_linked": "Client portal access connected",
+                "team.member_linked": "Team member connected",
                 "site.created": "Website registered",
                 "request.created": "Service request created",
                 "request.status_changed": "Request status changed",
