@@ -16,6 +16,12 @@ This repository contains the initial UI foundation and a dashboard preview using
 - Proof of value: monthly reports should explain the work delivered.
 - Cost discipline: use free tiers during validation and avoid paid infrastructure before revenue.
 
+## Database foundation
+
+An initial Supabase SQL migration is available at `supabase/migrations/20261119000000_initial_schema.sql`. It defines agency workspaces, team/client memberships, client accounts, websites, service requests, comments, activity events, and row-level security policies.
+
+This migration is source code only: it has **not** been applied to a live Supabase project. Authentication, database credentials, client-facing screens, and end-to-end database tests are not configured yet. Apply and test it in a new Supabase project before using real customer data.
+
 ## Technology
 
 - Next.js App Router
