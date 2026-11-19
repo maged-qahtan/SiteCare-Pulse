@@ -36,7 +36,7 @@ function csvCell(value: unknown) {
 }
 
 function ReportsContent() {
-  const [month, setMonth] = useState(() => new Date().toISOString().slice(0, 7));
+  const [month, setMonth] = useState(() => { const now = new Date(); return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`; });
   const [requests, setRequests] = useState<RequestRow[]>([]);
   const [events, setEvents] = useState<ActivityRow[]>([]);
   const [clientNames, setClientNames] = useState<Record<string, string>>({});
@@ -141,18 +141,20 @@ function ReportsContent() {
 
   return (
     <main className="min-h-screen bg-[#f5f7f5] px-5 py-8 sm:px-8">
-      <div className="mx-auto max-w-5xl">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="report-print mx-auto max-w-5xl">
+        <div className="print-hidden flex flex-wrap items-center justify-between gap-3">
           <Link href="/dashboard/" className="inline-flex items-center gap-2 text-xs font-semibold text-muted hover:text-brand"><ArrowLeft size={15} /> Back to overview</Link>
           <nav aria-label="Workspace navigation" className="flex flex-wrap gap-3 text-xs font-semibold text-muted"><Link href="/clients/" className="hover:text-brand">Clients</Link><Link href="/sites/" className="hover:text-brand">Websites</Link><Link href="/requests/" className="hover:text-brand">Requests</Link><Link href="/sla-settings/" className="hover:text-brand">SLA settings</Link><Link href="/team/" className="hover:text-brand">Team</Link></nav>
         </div>
         <div className="mt-6 flex flex-wrap items-end justify-between gap-4">
+          <div className="hidden print:block mb-5 border-b border-slate-300 pb-4"><div className="text-xl font-bold text-slate-900">SiteCare Pulse</div><div className="mt-1 text-xs text-slate-600">Agency client care operations report · {month}</div></div>
           <div>
             <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-brand"><FileText size={15} /> Agency reporting</div>
             <h1 className="text-2xl font-bold tracking-tight text-ink">Monthly work report</h1>
             <p className="mt-2 text-sm text-muted">A downloadable record of requests and recorded work for your selected month.</p>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="print-hidden flex flex-wrap items-center gap-2">
+            <button type="button" onClick={() => window.print()} disabled={loading || !!error} className="inline-flex items-center gap-2 rounded-xl bg-brand px-3 py-2.5 text-xs font-bold text-white disabled:opacity-50"><FileText size={14} /> Print / Save PDF</button>
             <input aria-label="Report month" type="month" value={month} onChange={(event) => setMonth(event.target.value)} className="rounded-xl border border-line bg-white px-3 py-2.5 text-sm text-ink" />
             <button onClick={() => void loadReport()} className="inline-flex items-center gap-2 rounded-xl border border-line bg-white px-3 py-2.5 text-xs font-bold text-muted"><RefreshCw size={14} /> Refresh</button>
           </div>
@@ -168,14 +170,14 @@ function ReportsContent() {
           <div className="rounded-2xl border border-line bg-white p-5"><div className="text-xs font-semibold text-muted">Resolution SLA</div><div className="mt-3 text-3xl font-bold text-ink">{loading ? "—" : resolutionRate === null ? "—" : `${resolutionRate}%`}</div><p className="mt-1 text-[10px] text-muted">{resolutionEligible.length ? `${resolutionMet} of ${resolutionEligible.length} measured` : "No measured requests"}</p></div>
         </section>
 
-        <section className="mt-6 overflow-hidden rounded-2xl border border-line bg-white">
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-4">
+        <section className="mt-6 overflow-hidden rounded-2xl border border-line bg-white print:border-slate-300 print:shadow-none">
+          <div className="print-hidden flex flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-4">
             <div><h2 className="text-sm font-bold text-ink">Recorded work</h2><p className="mt-1 text-xs text-muted">{events.length} activity events in this period</p></div>
             <button onClick={downloadCsv} disabled={loading || events.length === 0} className="inline-flex items-center gap-2 rounded-xl bg-brand px-4 py-2.5 text-xs font-bold text-white disabled:opacity-50"><Download size={15} /> Export CSV</button>
           </div>
           {loading ? <div className="flex items-center justify-center gap-2 px-5 py-12 text-sm text-muted"><LoaderCircle className="animate-spin" size={17} />Loading report...</div> : events.length === 0 ? <div className="px-5 py-12 text-center"><Activity className="mx-auto text-slate-300" size={28} /><p className="mt-3 text-sm font-semibold text-ink">No activity recorded this month</p><p className="mt-1 text-xs text-muted">As work is created and updated, it will appear here.</p></div> : <div className="divide-y divide-line">{events.map((event) => <div key={event.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-4"><div className="min-w-0"><div className="text-xs font-bold text-ink">{event.action.replaceAll(".", " ")}</div><div className="mt-1 truncate text-[11px] text-muted">{typeof event.details?.title === "string" ? event.details.title : typeof event.details?.name === "string" ? event.details.name : event.entity_type}</div></div><time className="text-[10px] text-muted">{new Date(event.created_at).toLocaleString()}</time></div>)}</div>}
         </section>
-        <p className="mt-4 text-[11px] leading-5 text-muted">This report reflects records currently stored in the workspace. It does not calculate contractual SLA compliance or include file attachments.</p>
+        <p className="mt-4 text-[11px] leading-5 text-muted print:mt-6 print:border-t print:border-slate-300 print:pt-3">This report reflects records currently stored in the workspace. SLA figures are operational measurements against configured elapsed-time targets, not contractual guarantees. File contents are not included in this report.</p>
       </div>
     </main>
   );
