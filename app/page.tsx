@@ -146,7 +146,7 @@ export default function Home() {
       <footer className="border-t border-line bg-white">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-5 py-6 text-[11px] text-muted sm:px-8">
           <span>© 2026 SiteCare Pulse</span>
-          <span>Early product release · Features and limits are evolving</span>
+          <div className="flex items-center gap-4"><Link href="/help/" className="font-semibold text-brand hover:underline">Help centre</Link><span>Early product release · Features and limits are evolving</span></div>
         </div>
       </footer>
     </main>
