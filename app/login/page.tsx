@@ -10,6 +10,7 @@ type AuthMode = "signin" | "signup";
 export default function LoginPage() {
   const router = useRouter();
   const [mode, setMode] = useState<AuthMode>("signin");
+  const [isResetting, setIsResetting] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [pending, setPending] = useState(false);
@@ -29,6 +30,15 @@ export default function LoginPage() {
 
     try {
       const supabase = createClient();
+
+      if (isResetting) {
+        const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+          redirectTo: `${window.location.origin}/auth/callback/?next=/reset-password/`
+        });
+        if (resetError) throw resetError;
+        setMessage("If this email belongs to an account, a password reset link has been sent.");
+        return;
+      }
 
       if (mode === "signup") {
         const { data, error: signUpError } = await supabase.auth.signUp({
@@ -82,12 +92,14 @@ export default function LoginPage() {
             <ShieldCheck size={15} /> SECURE WORKSPACE ACCESS
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-ink">
-            {mode === "signin" ? "Welcome back" : "Create your account"}
+            {isResetting ? "Reset your password" : mode === "signin" ? "Welcome back" : "Create your account"}
           </h1>
           <p className="mt-2 text-sm leading-6 text-muted">
-            {mode === "signin"
-              ? "Sign in to continue to your agency workspace."
-              : "Create an account to start setting up your agency workspace."}
+            {isResetting
+              ? "Enter your account email and we will send a secure password reset link."
+              : mode === "signin"
+                ? "Sign in to continue to your agency workspace."
+                : "Create an account to start setting up your agency workspace."}
           </p>
 
           <form onSubmit={handleSubmit} className="mt-7 space-y-4">
@@ -103,7 +115,7 @@ export default function LoginPage() {
                 placeholder="you@company.com"
               />
             </label>
-            <label className="block">
+            {!isResetting && <label className="block">
               <span className="mb-2 block text-xs font-semibold text-ink">Password</span>
               <input
                 type="password"
@@ -115,7 +127,7 @@ export default function LoginPage() {
                 className="w-full rounded-xl border border-line bg-white px-4 py-3 text-sm text-ink outline-none transition focus:border-brand focus:ring-2 focus:ring-emerald-100"
                 placeholder="At least 8 characters"
               />
-            </label>
+            </label>}
 
             {error && <p role="alert" className="rounded-lg bg-rose-50 px-3 py-2.5 text-xs leading-5 text-rose-700">{error}</p>}
             {message && <p role="status" className="rounded-lg bg-emerald-50 px-3 py-2.5 text-xs leading-5 text-emerald-700">{message}</p>}
@@ -126,22 +138,24 @@ export default function LoginPage() {
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-4 py-3 text-sm font-bold text-white transition hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-60"
             >
               {pending ? <LoaderCircle size={17} className="animate-spin" /> : <ArrowRight size={16} />}
-              {pending ? "Please wait..." : mode === "signin" ? "Sign in" : "Create account"}
+              {pending ? "Please wait..." : isResetting ? "Send reset link" : mode === "signin" ? "Sign in" : "Create account"}
             </button>
           </form>
 
+          {mode === "signin" && !isResetting && <button type="button" onClick={() => { setIsResetting(true); setError(""); setMessage(""); }} className="mt-4 w-full text-center text-xs font-semibold text-brand hover:underline">Forgot password?</button>}
           <div className="mt-6 border-t border-line pt-5 text-center text-xs text-muted">
-            {mode === "signin" ? "New to SiteCare Pulse?" : "Already have an account?"}{" "}
+            {isResetting ? "Remembered your password?" : mode === "signin" ? "New to SiteCare Pulse?" : "Already have an account?"}{" "}
             <button
               type="button"
               onClick={() => {
-                setMode(mode === "signin" ? "signup" : "signin");
+                if (isResetting) setIsResetting(false);
+                else setMode(mode === "signin" ? "signup" : "signin");
                 setError("");
                 setMessage("");
               }}
               className="font-bold text-brand hover:underline"
             >
-              {mode === "signin" ? "Create an account" : "Sign in"}
+              {isResetting || mode === "signup" ? "Sign in" : "Create an account"}
             </button>
           </div>
         </div>
