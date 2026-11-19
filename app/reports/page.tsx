@@ -66,20 +66,37 @@ function ReportsContent() {
       const end = new Date(start);
       end.setMonth(end.getMonth() + 1);
 
-      const [requestResult, eventResult, clientResult] = await Promise.all([
-        supabase.from("service_requests").select("id,title,status,priority,due_at,response_due_at,resolution_due_at,first_response_at,resolved_at,created_at,client_account_id").eq("organization_id", membership.organization_id).gte("created_at", start.toISOString()).lt("created_at", end.toISOString()).order("created_at", { ascending: false }),
+      const requestColumns = "id,title,status,priority,due_at,response_due_at,resolution_due_at,first_response_at,resolved_at,created_at,client_account_id";
+      const [createdResult, firstResponseResult, responseTargetResult, resolvedResult, resolutionTargetResult, eventResult, clientResult] = await Promise.all([
+        supabase.from("service_requests").select(requestColumns).eq("organization_id", membership.organization_id).gte("created_at", start.toISOString()).lt("created_at", end.toISOString()),
+        supabase.from("service_requests").select(requestColumns).eq("organization_id", membership.organization_id).gte("first_response_at", start.toISOString()).lt("first_response_at", end.toISOString()),
+        supabase.from("service_requests").select(requestColumns).eq("organization_id", membership.organization_id).gte("response_due_at", start.toISOString()).lt("response_due_at", end.toISOString()),
+        supabase.from("service_requests").select(requestColumns).eq("organization_id", membership.organization_id).gte("resolved_at", start.toISOString()).lt("resolved_at", end.toISOString()),
+        supabase.from("service_requests").select(requestColumns).eq("organization_id", membership.organization_id).gte("resolution_due_at", start.toISOString()).lt("resolution_due_at", end.toISOString()),
         supabase.from("activity_events").select("id,entity_type,entity_id,action,details,created_at").eq("organization_id", membership.organization_id).gte("created_at", start.toISOString()).lt("created_at", end.toISOString()).order("created_at", { ascending: false }),
         supabase.from("client_accounts").select("id,name").eq("organization_id", membership.organization_id)
       ]);
-      if (requestResult.error) throw requestResult.error;
-      if (eventResult.error) throw eventResult.error;
-      if (clientResult.error) throw clientResult.error;
+      for (const result of [createdResult, firstResponseResult, responseTargetResult, resolvedResult, resolutionTargetResult, eventResult, clientResult]) {
+        if (result.error) throw result.error;
+      }
+
+      const requestMap = new Map<string, RequestRow>();
+      for (const result of [createdResult, firstResponseResult, responseTargetResult, resolvedResult, resolutionTargetResult]) {
+        for (const request of (result.data ?? []) as RequestRow[]) requestMap.set(request.id, request);
+      }
+      const activity = (eventResult.data ?? []) as ActivityRow[];
+      const eventRequestIds = [...new Set(activity.filter((event) => event.entity_type === "request").map((event) => event.entity_id))];
+      if (eventRequestIds.length) {
+        const eventRequests = await supabase.from("service_requests").select(requestColumns).eq("organization_id", membership.organization_id).in("id", eventRequestIds);
+        if (eventRequests.error) throw eventRequests.error;
+        for (const request of (eventRequests.data ?? []) as RequestRow[]) requestMap.set(request.id, request);
+      }
 
       const names: Record<string, string> = {};
       for (const client of (clientResult.data ?? []) as ClientRow[]) names[client.id] = client.name;
       setClientNames(names);
-      setRequests((requestResult.data ?? []) as RequestRow[]);
-      setEvents((eventResult.data ?? []) as ActivityRow[]);
+      setRequests([...requestMap.values()]);
+      setEvents(activity);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Unable to load this month's report.");
     } finally {
@@ -128,13 +145,21 @@ function ReportsContent() {
     URL.revokeObjectURL(url);
   }
 
+  const monthStart = new Date(`${month}-01T00:00:00`).getTime();
+  const monthEndDate = new Date(monthStart);
+  monthEndDate.setMonth(monthEndDate.getMonth() + 1);
+  const monthEnd = monthEndDate.getTime();
+  const requestsCreated = requests.filter((request) => {
+    const created = new Date(request.created_at).getTime();
+    return created >= monthStart && created < monthEnd;
+  });
   const resolvedIds = new Set(events.filter((event) => event.action === "request.status_changed" && ["resolved", "closed"].includes(String(event.details?.new_status))).map((event) => event.entity_id));
   const resolved = resolvedIds.size;
-  const open = requests.filter((request) => !["resolved", "closed"].includes(request.status)).length;
+  const open = requestsCreated.filter((request) => !["resolved", "closed"].includes(request.status)).length;
   const now = Date.now();
-  const responseEligible = requests.filter((request) => request.response_due_at && (request.first_response_at || new Date(request.response_due_at).getTime() < now));
+  const responseEligible = requests.filter((request) => request.response_due_at && new Date(request.response_due_at).getTime() >= monthStart && new Date(request.response_due_at).getTime() < monthEnd && new Date(request.response_due_at).getTime() <= now);
   const responseMet = responseEligible.filter((request) => request.first_response_at && new Date(request.first_response_at).getTime() <= new Date(request.response_due_at!).getTime()).length;
-  const resolutionEligible = requests.filter((request) => request.resolution_due_at && (request.resolved_at || new Date(request.resolution_due_at).getTime() < now));
+  const resolutionEligible = requests.filter((request) => request.resolution_due_at && new Date(request.resolution_due_at).getTime() >= monthStart && new Date(request.resolution_due_at).getTime() < monthEnd && new Date(request.resolution_due_at).getTime() <= now);
   const resolutionMet = resolutionEligible.filter((request) => request.resolved_at && new Date(request.resolved_at).getTime() <= new Date(request.resolution_due_at!).getTime()).length;
   const responseRate = responseEligible.length ? Math.round(responseMet / responseEligible.length * 100) : null;
   const resolutionRate = resolutionEligible.length ? Math.round(resolutionMet / resolutionEligible.length * 100) : null;
@@ -163,11 +188,11 @@ function ReportsContent() {
         {error && <p role="alert" className="mt-5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</p>}
 
         <section className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-          <div className="rounded-2xl border border-line bg-white p-5"><div className="text-xs font-semibold text-muted">Requests created</div><div className="mt-3 text-3xl font-bold text-ink">{loading ? "—" : requests.length}</div></div>
+          <div className="rounded-2xl border border-line bg-white p-5"><div className="text-xs font-semibold text-muted">Requests created</div><div className="mt-3 text-3xl font-bold text-ink">{loading ? "—" : requestsCreated.length}</div></div>
           <div className="rounded-2xl border border-line bg-white p-5"><div className="text-xs font-semibold text-muted">Resolved during month</div><div className="mt-3 text-3xl font-bold text-ink">{loading ? "—" : resolved}</div></div>
           <div className="rounded-2xl border border-line bg-white p-5"><div className="text-xs font-semibold text-muted">Open requests created this month</div><div className="mt-3 text-3xl font-bold text-ink">{loading ? "—" : open}</div></div>
-          <div className="rounded-2xl border border-line bg-white p-5"><div className="text-xs font-semibold text-muted">First response SLA</div><div className="mt-3 text-3xl font-bold text-ink">{loading ? "—" : responseRate === null ? "—" : `${responseRate}%`}</div><p className="mt-1 text-[10px] text-muted">{responseEligible.length ? `${responseMet} of ${responseEligible.length} measured` : "No measured requests"}</p></div>
-          <div className="rounded-2xl border border-line bg-white p-5"><div className="text-xs font-semibold text-muted">Resolution SLA</div><div className="mt-3 text-3xl font-bold text-ink">{loading ? "—" : resolutionRate === null ? "—" : `${resolutionRate}%`}</div><p className="mt-1 text-[10px] text-muted">{resolutionEligible.length ? `${resolutionMet} of ${resolutionEligible.length} measured` : "No measured requests"}</p></div>
+          <div className="rounded-2xl border border-line bg-white p-5"><div className="text-xs font-semibold text-muted">First response SLA (targets due this month)</div><div className="mt-3 text-3xl font-bold text-ink">{loading ? "—" : responseRate === null ? "—" : `${responseRate}%`}</div><p className="mt-1 text-[10px] text-muted">{responseEligible.length ? `${responseMet} of ${responseEligible.length} measured` : "No measured requests"}</p></div>
+          <div className="rounded-2xl border border-line bg-white p-5"><div className="text-xs font-semibold text-muted">Resolution SLA (targets due this month)</div><div className="mt-3 text-3xl font-bold text-ink">{loading ? "—" : resolutionRate === null ? "—" : `${resolutionRate}%`}</div><p className="mt-1 text-[10px] text-muted">{resolutionEligible.length ? `${resolutionMet} of ${resolutionEligible.length} measured` : "No measured requests"}</p></div>
         </section>
 
         <section className="mt-6 overflow-hidden rounded-2xl border border-line bg-white print:border-slate-300 print:shadow-none">
@@ -177,7 +202,7 @@ function ReportsContent() {
           </div>
           {loading ? <div className="flex items-center justify-center gap-2 px-5 py-12 text-sm text-muted"><LoaderCircle className="animate-spin" size={17} />Loading report...</div> : events.length === 0 ? <div className="px-5 py-12 text-center"><Activity className="mx-auto text-slate-300" size={28} /><p className="mt-3 text-sm font-semibold text-ink">No activity recorded this month</p><p className="mt-1 text-xs text-muted">As work is created and updated, it will appear here.</p></div> : <div className="divide-y divide-line">{events.map((event) => <div key={event.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-4"><div className="min-w-0"><div className="text-xs font-bold text-ink">{event.action.replaceAll(".", " ")}</div><div className="mt-1 truncate text-[11px] text-muted">{typeof event.details?.title === "string" ? event.details.title : typeof event.details?.name === "string" ? event.details.name : event.entity_type}</div></div><time className="text-[10px] text-muted">{new Date(event.created_at).toLocaleString()}</time></div>)}</div>}
         </section>
-        <p className="mt-4 text-[11px] leading-5 text-muted print:mt-6 print:border-t print:border-slate-300 print:pt-3">This report reflects records currently stored in the workspace. SLA figures are operational measurements against configured elapsed-time targets, not contractual guarantees. File contents are not included in this report.</p>
+        <p className="mt-4 text-[11px] leading-5 text-muted print:mt-6 print:border-t print:border-slate-300 print:pt-3">This report reflects records currently stored in the workspace. SLA percentages measure requests whose configured response or resolution deadline fell within the selected month and elapsed by the time this report was generated. They are operational measurements against elapsed-time targets, not contractual guarantees. File contents are not included in this report.</p>
       </div>
     </main>
   );
