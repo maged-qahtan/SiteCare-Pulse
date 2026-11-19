@@ -63,7 +63,7 @@ export default function Home() {
         <nav className="space-y-1">
           {navItems.map((item) => {
             const Icon = item.icon;
-            return <a key={item.label} href="#" className={`sidebar-link ${item.active ? "active" : ""}`}><Icon size={17} />{item.label}{item.label === "Requests & tasks" && <span className="ml-auto rounded-full bg-white px-2 py-0.5 text-[10px] text-slate-500">8</span>}</a>;
+            return <a key={item.label} href={item.label === "Client accounts" ? "/clients/" : item.active ? "/" : "#"} className={`sidebar-link ${item.active ? "active" : ""}`}><Icon size={17} />{item.label}{item.label === "Requests & tasks" && <span className="ml-auto rounded-full bg-white px-2 py-0.5 text-[10px] text-slate-500">8</span>}</a>;
           })}
         </nav>
         <div className="mb-3 mt-9 px-3 text-[10px] font-bold uppercase tracking-[.16em] text-slate-400">Manage</div>
