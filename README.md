@@ -6,7 +6,7 @@ SiteCare Pulse helps website agencies coordinate client requests, delivery work,
 
 ## Current status
 
-The repository contains the initial dashboard UI and a sample-data preview. A Supabase Free project is provisioned and the database migrations are applied. The repository now includes a browser-based Supabase Auth sign-in/sign-up foundation, an email callback page, a dashboard session gate, and sign-out control. Next.js is configured for static export so it can be hosted on Cloudflare Pages Free. The app is **not yet connected to live deployment credentials or tested with a real signup**.
+The repository contains the initial dashboard UI and a sample-data preview. A Supabase Free project is provisioned and the database migrations are applied. The app now includes browser-based Supabase Auth sign-in/sign-up foundations, agency onboarding, client account management, website portfolio management, service request creation and status management, and request discussion comments. The dashboard still contains clearly labeled illustrative sample metrics. Next.js is configured for static export so it can be hosted on Cloudflare Pages Free. The app is **not yet connected to live deployment credentials or tested with a real signup or end-to-end user session**.
 
 Email delivery, production deployment, client-facing workflows, monitoring services, and billing are not configured.
 
@@ -86,6 +86,6 @@ All figures, names, requests, dates, and performance metrics currently shown in 
 2. Add the Supabase URL and publishable key as deployment environment variables.
 3. Configure Supabase Auth site and redirect URLs; test signup, email confirmation, login, and logout.
 4. Implement organization onboarding using the `create_organization` RPC.
-5. Connect client accounts, sites, requests, comments, and activity workflows to live data.
-6. Add automated role-based RLS tests, SLA rules, evidence attachments, and monthly reports.
+5. Add automated role-based RLS tests and run authenticated end-to-end tests against the deployed app.
+6. Implement activity history, SLA rules, evidence attachments, and monthly reports.
 7. Validate payment availability and billing only after the product is ready.
