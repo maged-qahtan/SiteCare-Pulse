@@ -113,7 +113,7 @@ function TeamContent() {
           <form onSubmit={addMember} className="space-y-3">
             <label className="block"><span className="mb-1.5 block text-xs font-semibold text-ink">Account email</span><input required type="email" value={email} onChange={event=>setEmail(event.target.value)} placeholder="teammate@example.com" className="w-full rounded-xl border border-line px-3.5 py-3 text-sm outline-none focus:border-brand"/></label>
             <label className="block"><span className="mb-1.5 block text-xs font-semibold text-ink">Workspace role</span><select value={newRole} onChange={event=>setNewRole(event.target.value as "admin"|"member")} className="w-full rounded-xl border border-line bg-white px-3.5 py-3 text-sm outline-none focus:border-brand"><option value="member">Member — manage day-to-day work</option><option value="admin">Admin — manage workspace settings</option></select></label>
-            <button disabled={saving||!email.trim()} className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-4 py-3 text-xs font-bold text-white disabled:opacity-50">{saving?<LoaderCircle size={15} className="animate-spin"/>:<Plus size={15}/ >}{saving?"Connecting...":"Connect team member"}</button>
+            <button disabled={saving||!email.trim()} className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-4 py-3 text-xs font-bold text-white disabled:opacity-50">{saving?<LoaderCircle size={15} className="animate-spin"/>:<Plus size={15} />}{saving?"Connecting...":"Connect team member"}</button>
           </form>
         </aside>}
       </div>
