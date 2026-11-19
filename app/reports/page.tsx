@@ -126,7 +126,7 @@ function ReportsContent() {
   return (
     <main className="min-h-screen bg-[#f5f7f5] px-5 py-8 sm:px-8">
       <div className="mx-auto max-w-5xl">
-        <Link href="/" className="inline-flex items-center gap-2 text-xs font-semibold text-muted hover:text-brand"><ArrowLeft size={15} /> Back to overview</Link>
+        <Link href="/dashboard/" className="inline-flex items-center gap-2 text-xs font-semibold text-muted hover:text-brand"><ArrowLeft size={15} /> Back to overview</Link>
         <div className="mt-6 flex flex-wrap items-end justify-between gap-4">
           <div>
             <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-brand"><FileText size={15} /> Agency reporting</div>
