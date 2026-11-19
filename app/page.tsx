@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { SignOutButton } from "@/components/sign-out-button";
 import { AuthGuard } from "@/components/auth-guard";
 
