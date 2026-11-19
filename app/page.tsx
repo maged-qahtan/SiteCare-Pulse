@@ -73,6 +73,7 @@ export default function Home() {
             <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-2 text-[11px] text-muted">
               <span className="inline-flex items-center gap-1.5"><CheckCircle2 size={14} className="text-brand" /> No credit card requested by this preview</span>
               <span className="inline-flex items-center gap-1.5"><ShieldCheck size={14} className="text-brand" /> Workspace-scoped data access</span>
+              <span className="basis-full text-[10px] leading-5 text-muted">Free preview account verification is currently limited to project team email addresses; external client onboarding needs custom SMTP.</span>
             </div>
           </div>
 
