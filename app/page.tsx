@@ -4,10 +4,12 @@ import {
   ArrowRight,
   BriefcaseBusiness,
   CheckCircle2,
+  Clock3,
   FileText,
   Globe2,
   MessageSquare,
   ShieldCheck,
+  Users,
   Wrench
 } from "lucide-react";
 
@@ -35,7 +37,17 @@ const features = [
   {
     icon: FileText,
     title: "Monthly work reports",
-    description: "Review the month’s recorded activity and export a shareable CSV work log."
+    description: "Review the month’s recorded activity, SLA measurements, and export a shareable CSV work log."
+  },
+  {
+    icon: Clock3,
+    title: "Response and resolution targets",
+    description: "Configure first-response and resolution targets for each request priority, then track overdue work."
+  },
+  {
+    icon: Users,
+    title: "Team and client access",
+    description: "Connect existing confirmed team and client accounts with role-scoped workspace access."
   },
   {
     icon: ShieldCheck,
