@@ -14,6 +14,7 @@ import {
   Plus,
   Search,
   SlidersHorizontal,
+  Users,
   Wrench
 } from "lucide-react";
 
@@ -23,7 +24,8 @@ const navItems = [
   { label: "Websites", icon: Globe2 },
   { label: "Requests & tasks", icon: Wrench },
   { label: "Monthly reports", icon: FileText },
-  { label: "SLA settings", icon: SlidersHorizontal }
+  { label: "SLA settings", icon: SlidersHorizontal },
+  { label: "Team", icon: Users }
 ];
 
 export default function Home() {
@@ -42,7 +44,7 @@ export default function Home() {
           <nav className="space-y-1">
             {navItems.map((item) => {
               const Icon = item.icon;
-              const href = item.label === "Client accounts" ? "/clients/" : item.label === "Websites" ? "/sites/" : item.label === "Requests & tasks" ? "/requests/" : item.label === "Monthly reports" ? "/reports/" : item.label === "SLA settings" ? "/sla-settings/" : "/dashboard/";
+              const href = item.label === "Client accounts" ? "/clients/" : item.label === "Websites" ? "/sites/" : item.label === "Requests & tasks" ? "/requests/" : item.label === "Monthly reports" ? "/reports/" : item.label === "SLA settings" ? "/sla-settings/" : item.label === "Team" ? "/team/" : "/dashboard/";
               return <Link key={item.label} href={href} className={`sidebar-link ${item.active ? "active" : ""}`}><Icon size={17} />{item.label}</Link>;
             })}
           </nav>
@@ -79,6 +81,7 @@ export default function Home() {
             <Link href="/requests/" className="shrink-0 rounded-lg px-3 py-2 text-[11px] font-semibold text-muted">Requests</Link>
             <Link href="/reports/" className="shrink-0 rounded-lg px-3 py-2 text-[11px] font-semibold text-muted">Reports</Link>
             <Link href="/sla-settings/" className="shrink-0 rounded-lg px-3 py-2 text-[11px] font-semibold text-muted">SLA settings</Link>
+            <Link href="/team/" className="shrink-0 rounded-lg px-3 py-2 text-[11px] font-semibold text-muted">Team</Link>
           </nav>
 
           <div className="mx-auto max-w-[1440px] px-8 py-8">
