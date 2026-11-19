@@ -6,9 +6,9 @@ SiteCare Pulse helps website agencies coordinate client requests, delivery work,
 
 ## Current status
 
-The application is deployed on Cloudflare Pages Free and connected to a Supabase Free project. A real owner account has successfully signed in, created an agency workspace, and created one client account. The live client-account and request pages have been opened against the database. The app includes browser-based Supabase Auth, agency onboarding, client account management, website portfolio management, service request creation and status management, and request discussion comments. The dashboard metrics and sample request queue remain illustrative and are not connected to live records.
+The application is deployed on Cloudflare Pages Free and connected to a Supabase Free project. A real owner account has successfully signed in, created an agency workspace, and created one client account. The live client-account and request pages have been opened against the database. The app includes browser-based Supabase Auth, agency onboarding, client account management, website portfolio management, service request creation and status management, and request discussion comments. The dashboard summary now reads live client, website, open-request, and resolved-this-month counts from Supabase. The latest-request list and activity history also use live records; no sample customer metrics are presented as real.
 
-This is an early working MVP, not yet a production-ready commercial SaaS. The complete end-to-end workflow still needs verification, including registering a valid website, creating and updating a request, comments, client-role access, password recovery, and automated tenant-isolation tests. Activity history, SLA automation, evidence attachments, monthly reports, team invitations, and billing are not yet implemented.
+This is an early working MVP, not yet a production-ready commercial SaaS. The complete end-to-end workflow still needs verification, including registering a valid website, creating and updating a request, comments, client-role access, password recovery, and automated tenant-isolation tests. Automatic activity history is implemented for client creation, website registration, request creation and updates, and request comments. SLA automation and breach notifications, evidence attachments, monthly reports, team invitations, and billing are not yet implemented.
 
 ## Product principles
 
@@ -25,7 +25,7 @@ The Supabase database currently records these applied migration versions, and th
 1. `20261119002142_initial_schema.sql` — organizations, team/client memberships, client accounts, sites, service requests, comments, activity events, and initial RLS policies.
 2. `20261119002208_restrict_membership_admin.sql` — limits membership administration to organization owners and admins.
 3. `20261119002558_move_rls_helpers_to_private.sql` — moves internal RLS helper functions to the non-exposed `private` schema and updates policies.
-4. `20261119002618_add_foreign_key_indexes.sql` — adds indexes to support foreign-key lookups.
+4. `20261119002618_add_foreign_key_indexes.sql` — adds indexes to support foreign-key lookups.\n5. `20261119003000_harden_create_organization_rpc.sql` — validates workspace names/slugs and locks down the function search path and grants.\n6. `20261119003100_activity_event_triggers.sql` — automatically records key workspace activity in the activity_events table.
 
 Temporary transaction-based SQL checks confirmed:
 - An organization owner can see both test client accounts and is recognized as an admin.
@@ -34,7 +34,7 @@ Temporary transaction-based SQL checks confirmed:
 
 Those test records were rolled back; no test customer data was retained.
 
-The Supabase security advisor currently reports one intentional warning for the authenticated `public.create_organization` SECURITY DEFINER RPC. It is designed to atomically create an organization and its first owner. This RPC still needs a dedicated authenticated-user test before production use. The performance advisor currently reports unused indexes because the database has not yet had real workload; this is expected during initial setup.
+The Supabase security advisor currently reports an intentional warning for the authenticated `public.create_organization` SECURITY DEFINER RPC. It is required to atomically create an organization and its first owner; it now validates inputs, uses an empty search path with fully qualified objects, and is executable by authenticated users only. A second warning reports that leaked-password protection is disabled in Supabase Auth; enable it in the Supabase dashboard before production customer onboarding. The performance advisor currently reports unused indexes because the database has not yet had real workload; review them after usage data exists.
 
 **Important:** These checks are not a complete security certification or full end-to-end test suite. Before real customer data is used, add automated tests for every role and every read/write policy, validate the organization-creation RPC, and review the remaining advisor warning.
 
