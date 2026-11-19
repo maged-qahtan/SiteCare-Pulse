@@ -25,7 +25,11 @@ The Supabase database currently records these applied migration versions, and th
 1. `20261119002142_initial_schema.sql` — organizations, team/client memberships, client accounts, sites, service requests, comments, activity events, and initial RLS policies.
 2. `20261119002208_restrict_membership_admin.sql` — limits membership administration to organization owners and admins.
 3. `20261119002558_move_rls_helpers_to_private.sql` — moves internal RLS helper functions to the non-exposed `private` schema and updates policies.
-4. `20261119002618_add_foreign_key_indexes.sql` — adds indexes to support foreign-key lookups.\n5. `20261119021701_harden_create_organization_rpc.sql` — validates workspace names/slugs and locks down the function search path and grants.\n6. `20261119021837_activity_event_triggers.sql` — automatically records key workspace activity in the activity_events table.\n7. `20261119022422_enrich_activity_event_details.sql` — includes client references in request and comment events for accurate reporting.\n8. `20261119022628_move_create_organization_definer_private.sql` — moves the SECURITY DEFINER implementation into the non-exposed private schema and leaves a SECURITY INVOKER RPC wrapper in public.
+4. `20261119002618_add_foreign_key_indexes.sql` — adds indexes to support foreign-key lookups.
+5. `20261119021701_harden_create_organization_rpc.sql` — validates workspace names/slugs and locks down the function search path and grants.
+6. `20261119021837_activity_event_triggers.sql` — automatically records key workspace activity in the activity_events table.
+7. `20261119022422_enrich_activity_event_details.sql` — includes client references in request and comment events for accurate reporting.
+8. `20261119022628_move_create_organization_definer_private.sql` — moves the SECURITY DEFINER implementation into the non-exposed private schema and leaves a SECURITY INVOKER RPC wrapper in public.
 
 Temporary transaction-based SQL checks confirmed:
 - An organization owner can see both test client accounts and is recognized as an admin.
@@ -78,14 +82,14 @@ Open http://localhost:3000.
 
 ## Important
 
-All figures, names, requests, dates, and performance metrics currently shown in the dashboard are illustrative sample data. Do not use them as real customer or SLA records.
+The authenticated dashboard metrics, request queue, and activity history use live workspace records. The public landing page contains a clearly labelled illustrative product preview, not customer metrics. Manual due dates can be set on requests and overdue open requests are highlighted; automated SLA policies and breach notifications are not yet implemented.
 
 ## Planned development stages
 
-1. Complete authenticated end-to-end tests for the deployed owner and client workflows.
-2. Register and verify a valid website, then test request creation, status changes, and comments.
+1. Complete authenticated end-to-end tests for the deployed owner and client workflows, including password recovery.
+2. Register and verify a valid website, then test request creation, status changes, comments, activity history, and CSV export.
 3. Add automated role-based RLS tests for every table and operation, including cross-tenant isolation.
-4. Implement activity history and SLA rules with auditable timestamps and status transitions.
-5. Add secure evidence attachments and client-ready monthly reports.
-6. Add team invitations and a dedicated client portal experience.
-7. Validate payment availability and billing only after the product is ready.
+4. Implement configurable SLA policies, response/resolution timers, and breach notifications.
+5. Add secure evidence attachments and branded PDF reports.
+6. Add team invitations and a more complete client portal experience.
+7. Validate payment availability, pricing, and billing only after the product is ready.
