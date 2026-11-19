@@ -69,6 +69,7 @@ create table public.service_requests (
   due_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
+  unique (organization_id, id),
   foreign key (organization_id, client_account_id)
     references public.client_accounts(organization_id, id) on delete cascade,
   foreign key (organization_id, site_id, client_account_id)
