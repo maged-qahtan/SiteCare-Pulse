@@ -19,30 +19,36 @@ export async function middleware(request: NextRequest) {
       getAll() {
         return request.cookies.getAll();
       },
-      setAll(cookiesToSet) {
+      setAll(cookiesToSet, headers) {
         cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
         response = NextResponse.next({ request });
         cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
+        headers?.forEach((value, key) => response.headers.set(key, value));
       }
     }
   });
 
-  const { data: { user } } = await supabase.auth.getUser();
+  // Verify the signed-in user's claims before allowing access to protected routes.
+  const { data: { claims } } = await supabase.auth.getClaims();
+  const isAuthenticated = Boolean(claims?.sub);
   const isLoginPage = request.nextUrl.pathname === "/login";
   const isAuthCallback = request.nextUrl.pathname.startsWith("/auth/");
 
-  if (!user && !isLoginPage && !isAuthCallback) {
+  if (!isAuthenticated && !isLoginPage && !isAuthCallback) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/login";
     redirectUrl.search = "";
     return NextResponse.redirect(redirectUrl);
   }
 
-  if (user && isLoginPage) {
+  if (isAuthenticated && isLoginPage) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/";
     redirectUrl.search = "";
-    return NextResponse.redirect(redirectUrl);
+    const redirectResponse = NextResponse.redirect(redirectUrl);
+    response.cookies.getAll().forEach((cookie) => redirectResponse.cookies.set(cookie));
+    response.headers.forEach((value, key) => redirectResponse.headers.set(key, value));
+    return redirectResponse;
   }
 
   return response;
