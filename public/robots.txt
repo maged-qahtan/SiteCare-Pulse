@@ -7,3 +7,5 @@ Disallow: /requests/
 Disallow: /reports/
 Disallow: /setup/
 Disallow: /reset-password/
+Disallow: /team/
+Disallow: /sla-settings/
