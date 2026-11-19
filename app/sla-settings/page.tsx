@@ -122,7 +122,7 @@ function SlaSettingsContent() {
         }).eq("organization_id", organizationId).eq("priority", policy.priority);
         if (updateError) throw updateError;
       }
-      setNotice("SLA policies saved. New requests and future status changes will use the updated targets.");
+      setNotice("SLA policies saved. New requests will use the updated targets. Existing requests keep their original deadlines unless their priority changes.");
       await load();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Unable to save SLA policies.");
