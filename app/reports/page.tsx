@@ -86,7 +86,7 @@ function ReportsContent() {
   useEffect(() => { void loadReport(); }, [loadReport]);
 
   function downloadCsv() {
-    const headers = ["Date", "Event", "Entity type", "Client", "Subject", "Priority", "Status", "Due date"];
+    const headers = ["Date", "Event", "Entity type", "Client", "Subject", "File name", "Priority", "Status", "Due date"];
     const rows = events.map((event) => {
       const request = requests.find((item) => item.id === event.entity_id);
       const clientFromEvent = typeof event.details?.client_account_id === "string" ? event.details.client_account_id : "";
@@ -102,6 +102,7 @@ function ReportsContent() {
         event.entity_type,
         clientNames[clientId] ?? "",
         subject,
+        typeof event.details?.file_name === "string" ? event.details.file_name : "",
         request?.priority ?? (typeof event.details?.new_priority === "string" ? event.details.new_priority : ""),
         request?.status ?? (typeof event.details?.new_status === "string" ? event.details.new_status : ""),
         request?.due_at ?? (typeof event.details?.due_at === "string" ? event.details.due_at : "")
