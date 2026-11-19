@@ -16,8 +16,9 @@ Migration `20261119230608_owner_only_admin_grants_rls.sql` adds `private.is_org_
 Verification performed after migration:
 - Confirmed policy definitions include owner-only checks for admin grants.
 - Confirmed current organizations still have their original owner memberships.
-- A simulated authenticated owner sees one organization and one membership in its scoped query.
-- This is a scoped SQL/RLS smoke test, not a full independent-account end-to-end test. Do not describe cross-tenant isolation as fully certified until separately authenticated sessions for both tenants have been tested against every relevant table and Storage operation.
+- Two existing owner identities were tested in separate transaction-scoped authenticated SQL sessions. Each saw exactly one organization and one membership; the second tenant saw zero client, site, request, comment, activity, and attachment rows from the first tenant, and no evidence Storage objects. The first tenant saw only rows whose organization_id matched its own organization.
+- A simulated non-owner admin was unable to promote a member to admin through direct UPDATE (zero rows returned); the simulation was rolled back. Existing data and memberships were preserved.
+- These are database/RLS smoke tests, not a full browser end-to-end security certification. Storage isolation was checked for visible objects but a separate real-file download/denial test remains outstanding.
 
 ## Auth email setup
 
@@ -56,5 +57,5 @@ Restore testing must be performed in a separate disposable test project/database
 - Create encrypted off-site database and Storage backups and demonstrate restore in isolated test environment.
 - Decide whether to retain the disabled Worker trigger (recommended until dependencies are reviewed); do not enable it with the current incompatible command.
 - Review public legal drafts and complete operator identity/contact details.
-- Confirm production deployment, Pages build output, environment variables, and auth redirects after merging the release branch.
+- CI run 278 passed ESLint, TypeScript, and production build on the release PR. The latest Pages preview deployment was still queued at the last check; verify its build/deploy completion before merging or promoting to production.
 - Billing/payment integration is intentionally not enabled; verify provider availability and legal eligibility before any implementation.
