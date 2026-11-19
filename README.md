@@ -41,6 +41,7 @@ The Supabase database currently records these applied migration versions, and th
 17. `20261119112142_seed_sla_policies_for_new_workspaces.sql` — creates the four default priority policies whenever a new agency workspace is created.
 18. `20261119112402_team_member_management.sql` — adds restricted team-member linking and staff-only team listing RPCs.
 19. `20261119112528_restrict_team_admin_grants.sql` — limits granting admin role to workspace owners.
+20. `20261119113106_index_policy_fk_and_auth_checks.sql` — adds missing foreign-key indexes and optimizes auth checks in attachment/SLA policies.
 
 Temporary transaction-based SQL checks confirmed:
 - An owner can see the workspace's client accounts and use the workspace-creation RPC.
