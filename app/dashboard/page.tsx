@@ -52,7 +52,7 @@ export default function Home() {
             <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-white text-brand"><CircleHelp size={17} /></div>
             <div className="text-xs font-bold text-ink">Need a hand?</div>
             <p className="mt-1 text-[11px] leading-5 text-muted">Visit the help center for tips on running your client care workflow.</p>
-            <span className="mt-3 inline-block text-[11px] font-bold text-muted">Help center coming soon</span>
+            <Link href="/help/" className="mt-3 inline-block text-[11px] font-bold text-brand hover:underline">Open help centre →</Link>
           </div>
           <div className="mt-5 flex items-center gap-3 border-t border-line pt-5">
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#dcece5] text-xs font-bold text-[#28634f]">WS</div>
@@ -82,6 +82,7 @@ export default function Home() {
             <Link href="/reports/" className="shrink-0 rounded-lg px-3 py-2 text-[11px] font-semibold text-muted">Reports</Link>
             <Link href="/sla-settings/" className="shrink-0 rounded-lg px-3 py-2 text-[11px] font-semibold text-muted">SLA settings</Link>
             <Link href="/team/" className="shrink-0 rounded-lg px-3 py-2 text-[11px] font-semibold text-muted">Team</Link>
+            <Link href="/help/" className="shrink-0 rounded-lg px-3 py-2 text-[11px] font-semibold text-muted">Help</Link>
           </nav>
 
           <div className="mx-auto max-w-[1440px] px-8 py-8">
