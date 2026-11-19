@@ -6,7 +6,9 @@ SiteCare Pulse helps website agencies coordinate client requests, delivery work,
 
 ## Current status
 
-This repository contains the initial UI foundation and a dashboard preview using sample data. A Supabase Free project is provisioned and the database migrations are applied. The Next.js application is **not yet connected** to Supabase authentication or live data. Email, monitoring services, client-facing workflows, and billing are not configured.
+The repository contains the initial dashboard UI and a sample-data preview. A Supabase Free project is provisioned and the database migrations are applied. The repository now includes an initial Supabase Auth sign-in/sign-up foundation, callback handler, route protection, and sign-out control, but the app is **not yet connected to live Supabase credentials or tested with a real signup**.
+
+Email delivery, production deployment, client-facing workflows, monitoring services, and billing are not configured.
 
 ## Product principles
 
@@ -18,22 +20,34 @@ This repository contains the initial UI foundation and a dashboard preview using
 
 ## Database foundation
 
-The Supabase database has these migrations applied:
+The Supabase database currently records these applied migration versions, and the repository migration filenames are aligned to those versions:
 
-1. `20261119000000_initial_schema.sql` — organizations, team/client memberships, client accounts, sites, service requests, comments, activity events, and initial RLS policies.
-2. `20261119010000_restrict_membership_admin.sql` — limits membership administration to organization owners and admins.
-3. `20261119020000_harden_rls_helpers.sql` — moves RLS helper functions into the non-exposed `private` schema, updates policies, and adds foreign-key indexes.
+1. `20261119002142_initial_schema.sql` — organizations, team/client memberships, client accounts, sites, service requests, comments, activity events, and initial RLS policies.
+2. `20261119002208_restrict_membership_admin.sql` — limits membership administration to organization owners and admins.
+3. `20261119002558_move_rls_helpers_to_private.sql` — moves internal RLS helper functions to the non-exposed `private` schema and updates policies.
+4. `20261119002618_add_foreign_key_indexes.sql` — adds indexes to support foreign-key lookups.
 
-The migration history in Supabase currently records the applied migrations. Temporary transaction-based SQL checks confirmed:
+Temporary transaction-based SQL checks confirmed:
 - An organization owner can see both test client accounts and is recognized as an admin.
 - A client user can see only their linked client account, not another client's account.
 - An unrelated user sees no client accounts and is not recognized as an organization member.
 
 Those test records were rolled back; no test customer data was retained.
 
-The Supabase security advisor currently reports one intentional warning for the authenticated `public.create_organization` SECURITY DEFINER RPC. It is designed to atomically create an organization and its first owner. The internal RLS helper functions are in the non-exposed `private` schema. The performance advisor currently reports unused indexes because the database has not yet had real workload; this is expected during initial setup.
+The Supabase security advisor currently reports one intentional warning for the authenticated `public.create_organization` SECURITY DEFINER RPC. It is designed to atomically create an organization and its first owner. This RPC still needs a dedicated authenticated-user test before production use. The performance advisor currently reports unused indexes because the database has not yet had real workload; this is expected during initial setup.
 
 **Important:** These checks are not a complete security certification or full end-to-end test suite. Before real customer data is used, add automated tests for every role and every read/write policy, validate the organization-creation RPC, and review the remaining advisor warning.
+
+## Authentication setup
+
+The app expects these public environment variables at deployment time:
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+
+Do not put a Supabase `service_role` or secret key in browser-visible environment variables or commit secrets to GitHub. The middleware leaves preview routes accessible until both public values are configured; once configured, it verifies Supabase JWT claims before protecting the dashboard.
+
+The Supabase Auth URL configuration must allow the deployed app's `/auth/callback` URL and the local development callback before signup confirmation can be tested.
 
 ## Technology
 
@@ -42,7 +56,7 @@ The Supabase security advisor currently reports one intentional warning for the 
 - TypeScript
 - Tailwind CSS
 - Lucide icons
-- Supabase Postgres and Row Level Security
+- Supabase Postgres, Auth, and Row Level Security
 
 ## Run locally
 
@@ -59,9 +73,10 @@ All figures, names, requests, dates, and performance metrics currently shown in 
 
 ## Planned development stages
 
-1. Connect Supabase Auth to the existing Next.js application without exposing secret keys.
-2. Implement sign-up/sign-in, organization onboarding, and session handling.
-3. Add client accounts, sites, requests, comments, and activity workflows.
-4. Add automated role-based RLS tests and end-to-end tests.
-5. Add SLA rules, evidence attachments, and monthly reports.
-6. Validate deployment and customer workflows; add billing only after payment availability is confirmed.
+1. Deploy the app on a free hosting tier that permits the intended use.
+2. Add the Supabase URL and publishable key as deployment environment variables.
+3. Configure Supabase Auth site and redirect URLs; test signup, email confirmation, login, and logout.
+4. Implement organization onboarding using the `create_organization` RPC.
+5. Connect client accounts, sites, requests, comments, and activity workflows to live data.
+6. Add automated role-based RLS tests, SLA rules, evidence attachments, and monthly reports.
+7. Validate payment availability and billing only after the product is ready.
