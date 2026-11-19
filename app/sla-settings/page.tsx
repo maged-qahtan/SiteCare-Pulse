@@ -15,7 +15,6 @@ type Policy = {
   resolution_minutes: number;
   active: boolean;
 };
-type Membership = { organization_id: string; role: string };
 
 const priorities: { value: Priority; label: string; description: string }[] = [
   { value: "urgent", label: "Urgent", description: "Critical incidents and severe outages" },
