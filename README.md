@@ -38,11 +38,14 @@ The Supabase database currently records these applied migration versions, and th
 14. `20261119023810_connect_existing_client_users.sql` — securely links an existing confirmed Auth account to a specific client account without sending an email.
 
 Temporary transaction-based SQL checks confirmed:
-- An organization owner can see both test client accounts and is recognized as an admin.
-- A client user can see only their linked client account, not another client's account.
-- An unrelated user sees no client accounts and is not recognized as an organization member.
+- An owner can see the workspace's client accounts and use the workspace-creation RPC.
+- A simulated client-role user sees only their linked client account and its requests.
+- A client can create a normal-priority new request, add comments, and upload/read private evidence attachments.
+- A client cannot change request status or create a high-priority request.
+- An unrelated user sees no client accounts, requests, attachments, activity events, or evidence objects.
+- The private storage policies enforce request-level access and the private RLS helper functions work under the authenticated role.
 
-Those test records were rolled back; no test customer data was retained.
+All simulated users, clients, requests, comments, and file metadata were created inside rolled-back transactions; no test records or binary files were retained.
 
 The workspace-creation RPC is exposed as a `SECURITY INVOKER` wrapper; its hardened `SECURITY DEFINER` implementation lives in the non-exposed `private` schema. All private RLS helper functions now use an empty search path with fully qualified object references. The latest Supabase security advisor no longer reports that function. One security advisor warning remains: leaked-password protection is disabled. Supabase documents this as a Pro-plan-only feature, so it remains disabled to preserve the $0 infrastructure requirement. Do not upgrade solely to clear this warning. The performance advisor currently reports unused indexes because the database has not yet had real workload; review them after usage data exists.
 
