@@ -116,10 +116,15 @@ export function LiveDashboardOverview() {
           sites: sitesResult.count ?? 0,
           openRequests: openResult.count ?? 0,
           resolvedThisMonth: resolvedResult.count ?? 0,
-          slaBreaches: ((slaResult.data ?? []) as SlaCheckRow[]).filter((request) =>
-            (request.response_due_at && !request.first_response_at && new Date(request.response_due_at).getTime() < Date.now())
-            || (request.resolution_due_at && !request.resolved_at && new Date(request.resolution_due_at).getTime() < Date.now())
-          ).length
+          slaBreaches: ((slaResult.data ?? []) as SlaCheckRow[]).filter((request) => {
+            const now = Date.now();
+            const responseDeadline = request.response_due_at ? new Date(request.response_due_at).getTime() : null;
+            const responseCompletedAt = request.first_response_at ? new Date(request.first_response_at).getTime() : now;
+            const resolutionDeadline = request.resolution_due_at ? new Date(request.resolution_due_at).getTime() : null;
+            const resolutionCompletedAt = request.resolved_at ? new Date(request.resolved_at).getTime() : now;
+            return (responseDeadline !== null && responseDeadline < responseCompletedAt)
+              || (resolutionDeadline !== null && resolutionDeadline < resolutionCompletedAt);
+          }).length
         });
         setRequests((requestResult.data ?? []) as RequestRow[]);
         setActivity((activityResult.data ?? []) as ActivityRow[]);
@@ -147,7 +152,7 @@ export function LiveDashboardOverview() {
         <Metric label="Websites" value={summary.sites} icon={Globe2} hint="Registered client websites" />
         <Metric label="Open requests" value={summary.openRequests} icon={LifeBuoy} hint="Requests that still need attention" />
         <Metric label="Resolved this month" value={summary.resolvedThisMonth} icon={CheckCircle2} hint="Requests resolved during this calendar month" />
-        <Metric label="Overdue SLA items" value={summary.slaBreaches} icon={AlertTriangle} hint="Open requests past a response or resolution target" />
+        <Metric label="Open SLA breaches" value={summary.slaBreaches} icon={AlertTriangle} hint="Open requests that missed a response or resolution target" />
       </section>
 
       <section className="mt-6 overflow-hidden rounded-2xl border border-line bg-white shadow-card">
