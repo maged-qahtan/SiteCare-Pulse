@@ -145,7 +145,7 @@ function SlaSettingsContent() {
     <div className="min-h-screen bg-[#f5f7f5]">
       <header className="flex h-[72px] items-center justify-between border-b border-line bg-white px-5 sm:px-8">
         <Link href="/dashboard/" className="flex items-center gap-3 text-sm font-bold text-ink"><span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand text-white"><Activity size={19} /></span>SiteCare <span className="-ml-3 text-brand">Pulse</span></Link>
-        <nav aria-label="Workspace navigation" className="hidden items-center gap-4 text-xs font-semibold text-muted sm:flex"><Link href="/dashboard/">Dashboard</Link><Link href="/clients/">Clients</Link><Link href="/sites/">Websites</Link><Link href="/requests/">Requests</Link><Link href="/reports/">Reports</Link><Link href="/sla-settings/" className="text-brand">SLA</Link><Link href="/team/" className="hover:text-brand">Team</Link></nav>
+        <nav aria-label="Workspace navigation" className="hidden items-center gap-4 text-xs font-semibold text-muted sm:flex"><Link href="/dashboard/">Dashboard</Link><Link href="/clients/">Clients</Link><Link href="/sites/">Websites</Link><Link href="/requests/">Requests</Link><Link href="/reports/">Reports</Link><Link href="/sla-settings/" className="text-brand">SLA</Link><Link href="/team/" className="hover:text-brand">Team</Link><Link href="/help/" className="hover:text-brand">Help</Link></nav>
         <SignOutButton />
       </header>
       <nav aria-label="Mobile workspace navigation" className="flex gap-2 overflow-x-auto border-b border-line bg-white px-4 py-3 sm:hidden">
@@ -155,7 +155,7 @@ function SlaSettingsContent() {
         <Link href="/requests/" className="shrink-0 rounded-lg px-3 py-2 text-[11px] font-semibold text-muted">Requests</Link>
         <Link href="/reports/" className="shrink-0 rounded-lg px-3 py-2 text-[11px] font-semibold text-muted">Reports</Link>
         <Link href="/sla-settings/" className="shrink-0 rounded-lg bg-[#edf4f0] px-3 py-2 text-[11px] font-bold text-brand">SLA</Link>
-      </nav>
+      <Link href="/help/" className="shrink-0 rounded-lg px-3 py-2 text-[11px] font-semibold text-muted">Help</Link></nav>
       <main className="mx-auto max-w-5xl px-5 py-8 sm:px-8">
         <Link href="/dashboard/" className="inline-flex items-center gap-2 text-xs font-semibold text-muted hover:text-brand"><ArrowLeft size={14} /> Back to overview</Link>
         <div className="mt-6 flex flex-wrap items-end justify-between gap-3">
