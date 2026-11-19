@@ -12,6 +12,10 @@ type RequestRow = {
   status: string;
   priority: string;
   due_at: string | null;
+  response_due_at: string | null;
+  resolution_due_at: string | null;
+  first_response_at: string | null;
+  resolved_at: string | null;
   created_at: string;
   client_account_id: string;
 };
@@ -63,7 +67,7 @@ function ReportsContent() {
       end.setMonth(end.getMonth() + 1);
 
       const [requestResult, eventResult, clientResult] = await Promise.all([
-        supabase.from("service_requests").select("id,title,status,priority,due_at,created_at,client_account_id").eq("organization_id", membership.organization_id).gte("created_at", start.toISOString()).lt("created_at", end.toISOString()).order("created_at", { ascending: false }),
+        supabase.from("service_requests").select("id,title,status,priority,due_at,response_due_at,resolution_due_at,first_response_at,resolved_at,created_at,client_account_id").eq("organization_id", membership.organization_id).gte("created_at", start.toISOString()).lt("created_at", end.toISOString()).order("created_at", { ascending: false }),
         supabase.from("activity_events").select("id,entity_type,entity_id,action,details,created_at").eq("organization_id", membership.organization_id).gte("created_at", start.toISOString()).lt("created_at", end.toISOString()).order("created_at", { ascending: false }),
         supabase.from("client_accounts").select("id,name").eq("organization_id", membership.organization_id)
       ]);
@@ -86,7 +90,7 @@ function ReportsContent() {
   useEffect(() => { void loadReport(); }, [loadReport]);
 
   function downloadCsv() {
-    const headers = ["Date", "Event", "Entity type", "Client", "Subject", "File name", "Priority", "Status", "Due date"];
+    const headers = ["Date", "Event", "Entity type", "Client", "Subject", "File name", "Priority", "Status", "Manual due date", "First response target", "First response at", "Resolution target", "Resolved at"];
     const rows = events.map((event) => {
       const request = requests.find((item) => item.id === event.entity_id);
       const clientFromEvent = typeof event.details?.client_account_id === "string" ? event.details.client_account_id : "";
@@ -105,7 +109,11 @@ function ReportsContent() {
         typeof event.details?.file_name === "string" ? event.details.file_name : "",
         request?.priority ?? (typeof event.details?.new_priority === "string" ? event.details.new_priority : ""),
         request?.status ?? (typeof event.details?.new_status === "string" ? event.details.new_status : ""),
-        request?.due_at ?? (typeof event.details?.due_at === "string" ? event.details.due_at : "")
+        request?.due_at ?? (typeof event.details?.due_at === "string" ? event.details.due_at : ""),
+        request?.response_due_at ?? "",
+        request?.first_response_at ?? "",
+        request?.resolution_due_at ?? "",
+        request?.resolved_at ?? ""
       ].map(csvCell).join(",");
     });
     const csv = [headers.map(csvCell).join(","), ...rows].join("\r\n");
@@ -123,6 +131,13 @@ function ReportsContent() {
   const resolvedIds = new Set(events.filter((event) => event.action === "request.status_changed" && ["resolved", "closed"].includes(String(event.details?.new_status))).map((event) => event.entity_id));
   const resolved = resolvedIds.size;
   const open = requests.filter((request) => !["resolved", "closed"].includes(request.status)).length;
+  const now = Date.now();
+  const responseEligible = requests.filter((request) => request.response_due_at && (request.first_response_at || new Date(request.response_due_at).getTime() < now));
+  const responseMet = responseEligible.filter((request) => request.first_response_at && new Date(request.first_response_at).getTime() <= new Date(request.response_due_at!).getTime()).length;
+  const resolutionEligible = requests.filter((request) => request.resolution_due_at && (request.resolved_at || new Date(request.resolution_due_at).getTime() < now));
+  const resolutionMet = resolutionEligible.filter((request) => request.resolved_at && new Date(request.resolved_at).getTime() <= new Date(request.resolution_due_at!).getTime()).length;
+  const responseRate = responseEligible.length ? Math.round(responseMet / responseEligible.length * 100) : null;
+  const resolutionRate = resolutionEligible.length ? Math.round(resolutionMet / resolutionEligible.length * 100) : null;
 
   return (
     <main className="min-h-screen bg-[#f5f7f5] px-5 py-8 sm:px-8">
@@ -142,10 +157,12 @@ function ReportsContent() {
 
         {error && <p role="alert" className="mt-5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</p>}
 
-        <section className="mt-6 grid gap-4 sm:grid-cols-3">
+        <section className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
           <div className="rounded-2xl border border-line bg-white p-5"><div className="text-xs font-semibold text-muted">Requests created</div><div className="mt-3 text-3xl font-bold text-ink">{loading ? "—" : requests.length}</div></div>
           <div className="rounded-2xl border border-line bg-white p-5"><div className="text-xs font-semibold text-muted">Resolved during month</div><div className="mt-3 text-3xl font-bold text-ink">{loading ? "—" : resolved}</div></div>
           <div className="rounded-2xl border border-line bg-white p-5"><div className="text-xs font-semibold text-muted">Open requests created this month</div><div className="mt-3 text-3xl font-bold text-ink">{loading ? "—" : open}</div></div>
+          <div className="rounded-2xl border border-line bg-white p-5"><div className="text-xs font-semibold text-muted">First response SLA</div><div className="mt-3 text-3xl font-bold text-ink">{loading ? "—" : responseRate === null ? "—" : `${responseRate}%`}</div><p className="mt-1 text-[10px] text-muted">{responseEligible.length ? `${responseMet} of ${responseEligible.length} measured` : "No measured requests"}</p></div>
+          <div className="rounded-2xl border border-line bg-white p-5"><div className="text-xs font-semibold text-muted">Resolution SLA</div><div className="mt-3 text-3xl font-bold text-ink">{loading ? "—" : resolutionRate === null ? "—" : `${resolutionRate}%`}</div><p className="mt-1 text-[10px] text-muted">{resolutionEligible.length ? `${resolutionMet} of ${resolutionEligible.length} measured` : "No measured requests"}</p></div>
         </section>
 
         <section className="mt-6 overflow-hidden rounded-2xl border border-line bg-white">
