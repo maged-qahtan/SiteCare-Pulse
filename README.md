@@ -25,7 +25,7 @@ The Supabase database currently records these applied migration versions, and th
 1. `20261119002142_initial_schema.sql` — organizations, team/client memberships, client accounts, sites, service requests, comments, activity events, and initial RLS policies.
 2. `20261119002208_restrict_membership_admin.sql` — limits membership administration to organization owners and admins.
 3. `20261119002558_move_rls_helpers_to_private.sql` — moves internal RLS helper functions to the non-exposed `private` schema and updates policies.
-4. `20261119002618_add_foreign_key_indexes.sql` — adds indexes to support foreign-key lookups.\n5. `20261119003000_harden_create_organization_rpc.sql` — validates workspace names/slugs and locks down the function search path and grants.\n6. `20261119003100_activity_event_triggers.sql` — automatically records key workspace activity in the activity_events table.
+4. `20261119002618_add_foreign_key_indexes.sql` — adds indexes to support foreign-key lookups.\n5. `20261119003000_harden_create_organization_rpc.sql` — validates workspace names/slugs and locks down the function search path and grants.\n6. `20261119003100_activity_event_triggers.sql` — automatically records key workspace activity in the activity_events table.\n7. `20261119003200_enrich_activity_event_details.sql` — includes client references in request and comment events for accurate reporting.
 
 Temporary transaction-based SQL checks confirmed:
 - An organization owner can see both test client accounts and is recognized as an admin.
