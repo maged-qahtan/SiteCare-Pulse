@@ -137,7 +137,7 @@ function SlaSettingsContent() {
     <div className="min-h-screen bg-[#f5f7f5]">
       <header className="flex h-[72px] items-center justify-between border-b border-line bg-white px-5 sm:px-8">
         <Link href="/dashboard/" className="flex items-center gap-3 text-sm font-bold text-ink"><span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand text-white"><Activity size={19} /></span>SiteCare <span className="-ml-3 text-brand">Pulse</span></Link>
-        <nav aria-label="Workspace navigation" className="hidden items-center gap-4 text-xs font-semibold text-muted sm:flex"><Link href="/dashboard/">Dashboard</Link><Link href="/clients/">Clients</Link><Link href="/sites/">Websites</Link><Link href="/requests/">Requests</Link><Link href="/reports/">Reports</Link><Link href="/sla-settings/" className="text-brand">SLA</Link></nav>
+        <nav aria-label="Workspace navigation" className="hidden items-center gap-4 text-xs font-semibold text-muted sm:flex"><Link href="/dashboard/">Dashboard</Link><Link href="/clients/">Clients</Link><Link href="/sites/">Websites</Link><Link href="/requests/">Requests</Link><Link href="/reports/">Reports</Link><Link href="/sla-settings/" className="text-brand">SLA</Link><Link href="/team/" className="hover:text-brand">Team</Link></nav>
         <SignOutButton />
       </header>
       <nav aria-label="Mobile workspace navigation" className="flex gap-2 overflow-x-auto border-b border-line bg-white px-4 py-3 sm:hidden">
