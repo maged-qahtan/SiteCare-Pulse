@@ -94,7 +94,7 @@ export default function Home() {
 
         <div className="mx-auto max-w-[1440px] px-8 py-8">
           <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
-            <div><div className="mb-2 flex items-center gap-2 text-xs font-semibold text-brand"><span className="status-dot" /> LIVE WORKSPACE PREVIEW</div><h1 className="text-2xl font-bold tracking-tight text-ink">Good morning, Admin <span>👋</span></h1><p className="mt-1.5 text-sm text-muted">Here’s what’s happening across your client websites today.</p></div>
+            <div><div className="mb-2 flex items-center gap-2 text-xs font-semibold text-brand"><span className="status-dot" /> DASHBOARD PREVIEW · SAMPLE DATA</div><h1 className="text-2xl font-bold tracking-tight text-ink">Good morning, Admin <span>👋</span></h1><p className="mt-1.5 text-sm text-muted">Here’s what’s happening across your client websites today.</p></div>
             <button className="inline-flex items-center gap-2 rounded-xl bg-brand px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-brand-dark"><Plus size={16} /> New request</button>
           </div>
 
@@ -109,7 +109,7 @@ export default function Home() {
             <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-card">
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-4"><div><h2 className="text-sm font-bold text-ink">Request queue</h2><p className="mt-1 text-[11px] text-muted">Track work across your client accounts</p></div><button className="text-xs font-bold text-brand">View all requests →</button></div>
               <div className="overflow-x-auto"><table className="w-full min-w-[650px] text-left"><thead className="bg-[#fafcfb] text-[10px] font-bold uppercase tracking-wider text-slate-400"><tr><th className="px-5 py-3">Client / Request</th><th className="px-4 py-3">Priority</th><th className="px-4 py-3">Status</th><th className="px-4 py-3">Due date</th></tr></thead><tbody className="divide-y divide-line">{requests.map((request) => <tr key={request.name} className="hover:bg-slate-50/60"><td className="px-5 py-4"><div className="flex items-center gap-3"><div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#edf4f0] text-[10px] font-bold text-[#376b58]">{request.initials}</div><div><div className="text-xs font-bold text-ink">{request.name}</div><div className="mt-1 text-[11px] text-muted">{request.task}</div></div></div></td><td className="px-4 py-4"><Badge tone={request.priority === "Urgent" ? "violet" : request.priority === "High" ? "rose" : "blue"}>{request.priority}</Badge></td><td className="px-4 py-4"><Badge tone={request.status === "In progress" ? "green" : request.status === "Waiting on client" ? "amber" : "blue"}>{request.status}</Badge></td><td className="px-4 py-4 text-[11px] font-medium text-muted">{request.due}</td></tr>)}</tbody></table></div>
-              <div className="flex items-center justify-between border-t border-line px-5 py-3 text-[10px] text-muted"><span>Showing 4 of 8 open requests</span><span>Updated just now</span></div>
+              <div className="flex items-center justify-between border-t border-line px-5 py-3 text-[10px] text-muted"><span>Showing 4 of 8 open requests</span><span>Illustrative sample data</span></div>
             </div>
 
             <div className="space-y-5">
