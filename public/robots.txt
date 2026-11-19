@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard/
+Disallow: /clients/
+Disallow: /sites/
+Disallow: /requests/
+Disallow: /reports/
+Disallow: /setup/
+Disallow: /reset-password/
