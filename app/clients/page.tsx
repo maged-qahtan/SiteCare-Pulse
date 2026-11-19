@@ -18,6 +18,7 @@ type ClientAccount = {
 
 function ClientsContent() {
   const [clients, setClients] = useState<ClientAccount[]>([]);
+  const [role, setRole] = useState("owner");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [website, setWebsite] = useState("");
@@ -49,6 +50,7 @@ function ClientsContent() {
         .single();
       if (membershipError) throw membershipError;
       if (!membership) throw new Error("No agency workspace membership was found.");
+      setRole(membership.role);
       const { data, error: clientsError } = await supabase
         .from("client_accounts")
         .select("id,name,contact_email,website_url,status,created_at")
@@ -135,12 +137,12 @@ function ClientsContent() {
           <div><div className="mb-2 flex items-center gap-2 text-xs font-semibold text-brand"><BriefcaseBusiness size={15} /> AGENCY WORKSPACE</div><h1 className="text-2xl font-bold tracking-tight text-ink">Client accounts</h1><p className="mt-1.5 text-sm text-muted">Manage the businesses your agency supports.</p></div>
           <button onClick={() => void loadClients()} className="inline-flex items-center gap-2 rounded-lg border border-line bg-white px-3 py-2 text-xs font-bold text-muted hover:text-brand"><RefreshCw size={14} /> Refresh</button>
         </div>
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+        <div className={role === "client" ? "grid gap-6" : "grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]"}>
           <section className="overflow-hidden rounded-2xl border border-line bg-white shadow-card">
             <div className="flex items-center justify-between border-b border-line px-5 py-4"><div><h2 className="text-sm font-bold text-ink">Your clients</h2><p className="mt-1 text-[11px] text-muted">Live records from your private workspace</p></div><span className="rounded-full bg-[#edf4f0] px-3 py-1 text-xs font-bold text-brand">{clients.length} total</span></div>
             {loading ? <div className="flex items-center justify-center gap-2 px-5 py-14 text-sm text-muted"><LoaderCircle size={17} className="animate-spin" />Loading client accounts...</div> : clients.length === 0 ? <div className="px-6 py-14 text-center"><BriefcaseBusiness className="mx-auto text-slate-300" size={30} /><h3 className="mt-3 text-sm font-bold text-ink">No clients yet</h3><p className="mt-1 text-xs text-muted">Add your first client using the form.</p></div> : <div className="divide-y divide-line">{clients.map(client => <article key={client.id} className="flex flex-wrap items-center justify-between gap-4 px-5 py-4"><div className="flex min-w-0 items-center gap-3"><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#edf4f0] text-brand"><BriefcaseBusiness size={18} /></div><div className="min-w-0"><h3 className="truncate text-sm font-bold text-ink">{client.name}</h3><div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-muted">{client.contact_email && <span className="inline-flex items-center gap-1"><Mail size={12} />{client.contact_email}</span>}{client.website_url && <a href={client.website_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 hover:text-brand"><Globe2 size={12} />{client.website_url}</a>}</div></div></div><span className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${client.status === "active" ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-600"}`}>{client.status}</span></article>)}</div>}
           </section>
-          <aside className="h-fit rounded-2xl border border-line bg-white p-5 shadow-card">
+          {role !== "client" && <aside className="h-fit rounded-2xl border border-line bg-white p-5 shadow-card">
             <div className="mb-5 flex items-center gap-2"><span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#edf4f0] text-brand"><Plus size={17} /></span><div><h2 className="text-sm font-bold text-ink">Add a client</h2><p className="text-[11px] text-muted">Create a new client account</p></div></div>
             <form onSubmit={handleCreate} className="space-y-4">
               <label className="block"><span className="mb-1.5 block text-xs font-semibold text-ink">Client / company name *</span><input required minLength={2} maxLength={160} value={name} onChange={e => setName(e.target.value)} placeholder="Acme Studio" className="w-full rounded-xl border border-line px-3.5 py-3 text-sm outline-none focus:border-brand" /></label>
@@ -151,7 +153,7 @@ function ClientsContent() {
               <button disabled={saving || !name.trim()} className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-4 py-3 text-xs font-bold text-white hover:bg-brand-dark disabled:opacity-60">{saving ? <LoaderCircle size={15} className="animate-spin" /> : <Plus size={15} />}{saving ? "Saving..." : "Create client account"}</button>
             </form>
             <p className="mt-4 text-[10px] leading-5 text-muted">Client data is protected by your workspace&apos;s database access policies.</p>
-          </aside>
+          </aside>}
         </div>
       </main>
     </div>
