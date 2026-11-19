@@ -8,6 +8,7 @@ import {
   BriefcaseBusiness,
   ChevronDown,
   CircleHelp,
+  FileText,
   Globe2,
   LayoutDashboard,
   Plus,
@@ -19,7 +20,8 @@ const navItems = [
   { label: "Overview", icon: LayoutDashboard, active: true },
   { label: "Client accounts", icon: BriefcaseBusiness },
   { label: "Websites", icon: Globe2 },
-  { label: "Requests & tasks", icon: Wrench }
+  { label: "Requests & tasks", icon: Wrench },
+  { label: "Monthly reports", icon: FileText }
 ];
 
 export default function Home() {
@@ -38,7 +40,7 @@ export default function Home() {
           <nav className="space-y-1">
             {navItems.map((item) => {
               const Icon = item.icon;
-              const href = item.label === "Client accounts" ? "/clients/" : item.label === "Websites" ? "/sites/" : item.label === "Requests & tasks" ? "/requests/" : "/";
+              const href = item.label === "Client accounts" ? "/clients/" : item.label === "Websites" ? "/sites/" : item.label === "Requests & tasks" ? "/requests/" : item.label === "Monthly reports" ? "/reports/" : "/";
               return <Link key={item.label} href={href} className={`sidebar-link ${item.active ? "active" : ""}`}><Icon size={17} />{item.label}</Link>;
             })}
           </nav>
