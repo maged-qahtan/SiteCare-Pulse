@@ -183,7 +183,8 @@ export function LiveDashboardOverview() {
                 "request.status_changed": "Request status changed",
                 "request.priority_changed": "Request priority changed",
                 "request.updated": "Request details updated",
-                "request.comment_added": "Comment added to a request"
+                "request.comment_added": "Comment added to a request",
+                "request.attachment_added": "Evidence attached to a request"
               };
               const subject = typeof event.details?.name === "string" ? event.details.name : typeof event.details?.title === "string" ? event.details.title : "Workspace item";
               return (
