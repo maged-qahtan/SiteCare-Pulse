@@ -373,3 +373,22 @@ with check (
   actor_id = auth.uid()
   and public.is_staff_member(organization_id)
 );
+
+-- Keep database access limited to authenticated workspace users.
+revoke all on function public.is_org_member(uuid) from public;
+revoke all on function public.is_staff_member(uuid) from public;
+revoke all on function public.can_access_client(uuid, uuid) from public;
+revoke all on function public.can_access_request(uuid, uuid) from public;
+grant execute on function public.is_org_member(uuid) to authenticated;
+grant execute on function public.is_staff_member(uuid) to authenticated;
+grant execute on function public.can_access_client(uuid, uuid) to authenticated;
+grant execute on function public.can_access_request(uuid, uuid) to authenticated;
+
+grant usage on schema public to authenticated;
+grant select, update on public.organizations to authenticated;
+grant select, insert, update, delete on public.organization_members to authenticated;
+grant select, insert, update, delete on public.client_accounts to authenticated;
+grant select, insert, update, delete on public.sites to authenticated;
+grant select, insert, update, delete on public.service_requests to authenticated;
+grant select, insert on public.request_comments to authenticated;
+grant select, insert on public.activity_events to authenticated;
