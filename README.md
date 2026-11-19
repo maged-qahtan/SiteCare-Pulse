@@ -29,7 +29,7 @@ The Supabase database currently records these applied migration versions, and th
 5. `20261119021701_harden_create_organization_rpc.sql` — validates workspace names/slugs and locks down the function search path and grants.
 6. `20261119021837_activity_event_triggers.sql` — automatically records key workspace activity in the activity_events table.
 7. `20261119022422_enrich_activity_event_details.sql` — includes client references in request and comment events for accurate reporting.
-8. `20261119022628_move_create_organization_definer_private.sql` — moves the SECURITY DEFINER implementation into the non-exposed private schema and leaves a SECURITY INVOKER RPC wrapper in public.
+8. `20261119022628_move_create_organization_definer_private.sql` — moves the SECURITY DEFINER implementation into the non-exposed private schema and leaves a SECURITY INVOKER RPC wrapper in public.\n9. `20261119023219_harden_private_rls_helper_search_paths.sql` — hardens all private RLS helper function search paths.
 
 Temporary transaction-based SQL checks confirmed:
 - An organization owner can see both test client accounts and is recognized as an admin.
@@ -38,7 +38,7 @@ Temporary transaction-based SQL checks confirmed:
 
 Those test records were rolled back; no test customer data was retained.
 
-The workspace-creation RPC is exposed as a `SECURITY INVOKER` wrapper; its hardened `SECURITY DEFINER` implementation lives in the non-exposed `private` schema. The latest Supabase security advisor no longer reports that function. One warning remains: leaked-password protection is disabled in Supabase Auth; enable it in the Supabase dashboard before production customer onboarding. The performance advisor currently reports unused indexes because the database has not yet had real workload; review them after usage data exists.
+The workspace-creation RPC is exposed as a `SECURITY INVOKER` wrapper; its hardened `SECURITY DEFINER` implementation lives in the non-exposed `private` schema. All private RLS helper functions now use an empty search path with fully qualified object references. The latest Supabase security advisor no longer reports that function. One warning remains: leaked-password protection is disabled in Supabase Auth; enable it in the Supabase dashboard before production customer onboarding. The performance advisor currently reports unused indexes because the database has not yet had real workload; review them after usage data exists.
 
 **Important:** These checks are not a complete security certification or full end-to-end test suite. Before real customer data is used, add automated tests for every role and every read/write policy, validate the organization-creation RPC, and revisit leaked-password protection only if the product later moves to a paid Supabase plan.
 
