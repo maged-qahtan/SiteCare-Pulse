@@ -19,7 +19,6 @@ type Site = {
   status: "active" | "paused" | "archived";
   created_at: string;
 };
-type Membership = { organization_id: string; role: Role; client_account_id: string | null };
 type DbResult<T> = { data: T | null; error: Error | null };
 
 const platformLabels: Record<Site["platform"], string> = {
