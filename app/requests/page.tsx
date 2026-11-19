@@ -56,6 +56,8 @@ function RequestsContent() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [requestSearch, setRequestSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | RequestStatus>("all");
   const isClient = role === "client";
 
   const loadWorkspace = useCallback(async () => {
@@ -261,8 +263,15 @@ function RequestsContent() {
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
           <section className="overflow-hidden rounded-2xl border border-line bg-white shadow-card">
-            <div className="flex items-center justify-between border-b border-line px-5 py-4"><div><h2 className="text-sm font-bold text-ink">Request queue</h2><p className="mt-1 text-[11px] text-muted">Live records from your workspace</p></div><span className="rounded-full bg-[#edf4f0] px-3 py-1 text-xs font-bold text-brand">{requests.length} total</span></div>
-            {loading ? <div className="flex items-center justify-center gap-2 px-5 py-14 text-sm text-muted"><LoaderCircle size={17} className="animate-spin" />Loading requests...</div> : requests.length === 0 ? <div className="px-6 py-14 text-center"><Wrench className="mx-auto text-slate-300" size={30} /><h3 className="mt-3 text-sm font-bold text-ink">No requests yet</h3><p className="mt-1 text-xs text-muted">Create the first request using the form.</p></div> : <div className="divide-y divide-line">{requests.map(request => <article key={request.id} className="px-5 py-4">
+            <div className="flex items-center justify-between border-b border-line px-5 py-4"><div><h2 className="text-sm font-bold text-ink">Request queue</h2><p className="mt-1 text-[11px] text-muted">Live records from your workspace</p></div><span className="rounded-full bg-[#edf4f0] px-3 py-1 text-xs font-bold text-brand">{filteredRequests.length} of {requests.length}</span></div>
+            <div className="grid gap-2 border-b border-line p-4 sm:grid-cols-[minmax(0,1fr)_190px]">
+              <input value={requestSearch} onChange={event => setRequestSearch(event.target.value)} placeholder="Search requests, details, or clients..." aria-label="Search requests" className="w-full rounded-xl border border-line px-3 py-2.5 text-xs outline-none focus:border-brand" />
+              <select value={statusFilter} onChange={event => setStatusFilter(event.target.value as "all" | RequestStatus)} aria-label="Filter requests by status" className="rounded-xl border border-line bg-white px-3 py-2.5 text-xs outline-none focus:border-brand">
+                <option value="all">All statuses</option>
+                {Object.entries(statusLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+              </select>
+            </div>
+            {loading ? <div className="flex items-center justify-center gap-2 px-5 py-14 text-sm text-muted"><LoaderCircle size={17} className="animate-spin" />Loading requests...</div> : requests.length === 0 ? <div className="px-6 py-14 text-center"><Wrench className="mx-auto text-slate-300" size={30} /><h3 className="mt-3 text-sm font-bold text-ink">No requests yet</h3><p className="mt-1 text-xs text-muted">Create the first request using the form.</p></div> : filteredRequests.length === 0 ? <div className="px-6 py-12 text-center text-xs text-muted">No requests match these filters.</div> : <div className="divide-y divide-line">{filteredRequests.map(request => <article key={request.id} className="px-5 py-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0"><h3 className="text-sm font-bold text-ink">{request.title}</h3><p className="mt-1 text-xs leading-5 text-muted">{request.description || "No additional details provided."}</p><div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-muted"><span>{clientNames.get(request.client_account_id) ?? "Client"}</span>{request.site_id && <span>· {siteNames.get(request.site_id) ?? "Website"}</span>}<span>· {new Date(request.created_at).toLocaleDateString()}</span></div></div>
                 <div className="flex shrink-0 flex-wrap items-center gap-2"><span className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${request.priority === "urgent" ? "bg-rose-50 text-rose-700" : request.priority === "high" ? "bg-amber-50 text-amber-700" : "bg-slate-100 text-slate-600"}`}>{priorityLabels[request.priority]}</span><span className="rounded-full bg-[#edf4f0] px-2.5 py-1 text-[10px] font-bold text-brand">{statusLabels[request.status]}</span></div>
