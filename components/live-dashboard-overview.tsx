@@ -133,7 +133,7 @@ export function LiveDashboardOverview() {
         <Metric label="Client accounts" value={summary.clients} icon={BriefcaseBusiness} hint="Live records in this workspace" />
         <Metric label="Websites" value={summary.sites} icon={Globe2} hint="Registered client websites" />
         <Metric label="Open requests" value={summary.openRequests} icon={LifeBuoy} hint="Requests that still need attention" />
-        <Metric label="Resolved this month" value={summary.resolvedThisMonth} icon={CheckCircle2} hint="Resolved or closed since month start" />
+        <Metric label="Resolved (this month's requests)" value={summary.resolvedThisMonth} icon={CheckCircle2} hint="Created this month and now resolved or closed" />
       </section>
 
       <section className="mt-6 overflow-hidden rounded-2xl border border-line bg-white shadow-card">
