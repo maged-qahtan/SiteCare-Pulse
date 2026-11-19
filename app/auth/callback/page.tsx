@@ -24,7 +24,7 @@ export default function AuthCallbackPage() {
 
         if (active) {
           const next = new URLSearchParams(window.location.search).get("next");
-          const destination = next && next.startsWith("/") && !next.startsWith("//") ? next : "/";
+          const destination = next && next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard/";
           window.location.replace(destination);
         }
       } catch (error) {
