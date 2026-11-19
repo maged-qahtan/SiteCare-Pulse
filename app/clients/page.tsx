@@ -127,7 +127,7 @@ function ClientsContent() {
     <div className="min-h-screen bg-[#f5f7f5]">
       <header className="flex h-[72px] items-center justify-between border-b border-line bg-white px-5 sm:px-8">
         <Link href="/" className="flex items-center gap-3 text-sm font-bold text-ink"><span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand text-white"><Activity size={19} /></span>SiteCare <span className="-ml-3 text-brand">Pulse</span></Link>
-        <div className="flex items-center gap-4"><Link href="/" className="text-xs font-semibold text-muted hover:text-brand">Dashboard</Link><SignOutButton /></div>
+        <nav aria-label="Workspace navigation" className="flex items-center gap-3 text-xs font-semibold text-muted"><Link href="/" className="hover:text-brand">Dashboard</Link><Link href="/clients/" className="hover:text-brand">Clients</Link><Link href="/sites/" className="hover:text-brand">Websites</Link><Link href="/requests/" className="hover:text-brand">Requests</Link></nav><SignOutButton />
       </header>
       <main className="mx-auto max-w-6xl px-5 py-8 sm:px-8">
         <Link href="/" className="mb-5 inline-flex items-center gap-2 text-xs font-semibold text-muted hover:text-brand"><ArrowLeft size={14} /> Back to overview</Link>
