@@ -106,22 +106,29 @@ function SlaSettingsContent() {
       const { data: authData, error: authError } = await supabase.auth.getUser();
       if (authError || !authData.user) throw authError ?? new Error("Please sign in again.");
       const table = supabase.from("sla_policies") as unknown as {
-        update: (values: { response_minutes: number; resolution_minutes: number; active: boolean; updated_by: string; updated_at: string }) => {
-          eq: (column: string, value: string) => {
-            eq: (column: string, value: string) => Promise<{ error: Error | null }>;
-          };
-        };
+        upsert: (values: {
+          organization_id: string;
+          priority: Priority;
+          response_minutes: number;
+          resolution_minutes: number;
+          active: boolean;
+          updated_by: string;
+          updated_at: string;
+        }[], options: { onConflict: string }) => Promise<{ error: Error | null }>;
       };
-      for (const policy of policies) {
-        const { error: updateError } = await table.update({
+      const { error: saveError } = await table.upsert(
+        policies.map((policy) => ({
+          organization_id: organizationId,
+          priority: policy.priority,
           response_minutes: policy.response_minutes,
           resolution_minutes: policy.resolution_minutes,
           active: policy.active,
           updated_by: authData.user.id,
           updated_at: new Date().toISOString()
-        }).eq("organization_id", organizationId).eq("priority", policy.priority);
-        if (updateError) throw updateError;
-      }
+        })),
+        { onConflict: "organization_id,priority" }
+      );
+      if (saveError) throw saveError;
       setNotice("SLA policies saved. New requests will use the updated targets. Existing requests keep their original deadlines unless their priority changes.");
       await load();
     } catch (caught) {
