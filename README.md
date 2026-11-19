@@ -6,9 +6,9 @@ SiteCare Pulse helps website agencies coordinate client requests, delivery work,
 
 ## Current status
 
-The application is deployed on Cloudflare Pages Free and connected to a Supabase Free project. A real owner account has successfully signed in, created an agency workspace, and created one client account. The live client-account and request pages have been opened against the database. The app includes browser-based Supabase Auth (including password-reset flow), agency onboarding, client account management, website portfolio management, service request creation and status management, request discussion comments, private evidence attachments (PNG/JPG/WebP/PDF, up to 10 MB each), automatic activity history, monthly CSV work-report export, and owner/admin linking for already-confirmed client portal accounts. External client account verification remains blocked until a custom SMTP provider is configured. The public product landing page is at `/`, and the authenticated workspace dashboard is at `/dashboard/`. The dashboard summary reads live client, website, open-request, and resolved-request counts from Supabase. The latest-request list and activity history also use live records; no sample customer metrics are presented as real.
+The application is deployed on Cloudflare Pages Free and connected to a Supabase Free project. A real owner account has successfully signed in, created an agency workspace, and created one client account. The live client-account and request pages have been opened against the database. The app includes browser-based Supabase Auth (including password-reset flow), agency onboarding, client account management, website portfolio management, service request creation and status management, request discussion comments, private evidence attachments (PNG/JPG/WebP/PDF, up to 10 MB each), configurable first-response and resolution targets by priority, automatic activity history, monthly CSV work-report export with SLA measurements, and owner/admin linking for already-confirmed client portal accounts. External client account verification remains blocked until a custom SMTP provider is configured. The public product landing page is at `/`, and the authenticated workspace dashboard is at `/dashboard/`. The dashboard summary reads live client, website, open-request, and resolved-request counts from Supabase. The latest-request list and activity history also use live records; no sample customer metrics are presented as real.
 
-This is an early working MVP, not yet a production-ready commercial SaaS. The complete end-to-end workflow still needs verification, including registering a valid website, creating and updating a request, comments, client-role access, password recovery email delivery, and automated tenant-isolation tests. The current Supabase default SMTP service only sends to project team addresses (currently 2 emails/hour); external client sign-up and password recovery require a custom SMTP provider. Automatic activity history is implemented for client creation, website registration, request creation and updates, and request comments. A monthly activity CSV export is available. External client email verification requires a custom SMTP provider; the Supabase default mailer is restricted to project team addresses. Live uptime monitoring, backup integrations, automated SLA timers and breach notifications, branded PDF reports, team invitations, and billing are not yet implemented.
+This is an early working MVP, not yet a production-ready commercial SaaS. The complete end-to-end workflow still needs verification, including registering a valid website, creating and updating a request, comments, client-role access, password recovery email delivery, and automated tenant-isolation tests. The current Supabase default SMTP service only sends to project team addresses (currently 2 emails/hour); external client sign-up and password recovery require a custom SMTP provider. Automatic activity history is implemented for client creation, website registration, request creation and updates, and request comments. A monthly activity CSV export is available. External client email verification requires a custom SMTP provider; the Supabase default mailer is restricted to project team addresses. Live uptime monitoring, backup integrations, automated SLA breach notifications, branded PDF reports, team invitations, and billing are not yet implemented.
 
 ## Product principles
 
@@ -35,7 +35,7 @@ The Supabase database currently records these applied migration versions, and th
 11. `20261119023331_log_request_attachment_activity.sql` — records evidence uploads in the request activity history.
 12. `20261119023502_tighten_evidence_storage_cleanup.sql` — limits object deletion to the uploader or workspace staff with request access.
 13. `20261119023605_safe_storage_path_policy_comparisons.sql` — avoids unsafe UUID casts in evidence object path policies.
-14. `20261119023810_connect_existing_client_users.sql` — securely links an existing confirmed Auth account to a specific client account without sending an email.
+14. `20261119023810_connect_existing_client_users.sql` — securely links an existing confirmed Auth account to a specific client account without sending an email.\n15. `20261119111837_add_configurable_sla_policies.sql` — adds priority-based response/resolution targets and automatic request timestamps.\n16. `20261119111935_fix_sla_trigger_timestamp_variable.sql` — corrects the SLA trigger timestamp variable.
 
 Temporary transaction-based SQL checks confirmed:
 - An owner can see the workspace's client accounts and use the workspace-creation RPC.
@@ -45,7 +45,7 @@ Temporary transaction-based SQL checks confirmed:
 - An unrelated user sees no client accounts, requests, attachments, activity events, or evidence objects.
 - The private storage policies enforce request-level access and the private RLS helper functions work under the authenticated role.
 
-All simulated users, clients, requests, comments, and file metadata were created inside rolled-back transactions; no test records or binary files were retained.
+All simulated users, clients, requests, comments, and file metadata were created inside rolled-back transactions; no test records or binary files were retained. SLA regression checks also confirmed default policy loading, deadline assignment, deadline recalculation after priority changes, first-response timestamps, and resolution timestamps.
 
 The workspace-creation RPC is exposed as a `SECURITY INVOKER` wrapper; its hardened `SECURITY DEFINER` implementation lives in the non-exposed `private` schema. All private RLS helper functions now use an empty search path with fully qualified object references. The latest Supabase security advisor no longer reports that function. One security advisor warning remains: leaked-password protection is disabled. Supabase documents this as a Pro-plan-only feature, so it remains disabled to preserve the $0 infrastructure requirement. Do not upgrade solely to clear this warning. The performance advisor currently reports unused indexes because the database has not yet had real workload; review them after usage data exists.
 
@@ -91,14 +91,14 @@ Open http://localhost:3000.
 
 ## Important
 
-The authenticated dashboard metrics, request queue, and activity history use live workspace records. The public landing page contains a clearly labelled illustrative product preview, not customer metrics. Manual due dates can be set on requests and overdue open requests are highlighted; automated SLA policies and breach notifications are not yet implemented.
+The authenticated dashboard metrics, request queue, activity history, and SLA deadlines use live workspace records. The public landing page contains a clearly labelled illustrative product preview, not customer metrics. Manual due dates can be set on requests and overdue open requests are highlighted. Response and resolution targets are configurable by priority and are tracked using elapsed clock time; automated SLA breach notifications and business-hour calendars are not yet implemented.
 
 ## Planned development stages
 
 1. Complete authenticated end-to-end tests for the deployed owner and client workflows, including password recovery.
 2. Register and verify a valid website, then test request creation, status changes, comments, activity history, and CSV export.
 3. Add automated role-based RLS tests for every table and operation, including cross-tenant isolation.
-4. Implement configurable SLA policies, response/resolution timers, breach notifications, uptime checks, and backup-status integrations.
+4. Add automated SLA breach notifications, business-hour calendars, uptime checks, and backup-status integrations.
 5. Add branded PDF reports.
 6. Add team invitations and a more complete client portal experience.
 7. Validate payment availability, pricing, and billing only after the product is ready.
