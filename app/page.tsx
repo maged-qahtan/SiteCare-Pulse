@@ -1,3 +1,6 @@
+import { SignOutButton } from "@/components/sign-out-button";
+import { AuthGuard } from "@/components/auth-guard";
+
 import {
   Activity,
   ArrowDownRight,
@@ -49,6 +52,7 @@ function Badge({ children, tone = "green" }: { children: React.ReactNode; tone?:
 
 export default function Home() {
   return (
+    <AuthGuard>
     <div className="min-h-screen">
       <aside className="sidebar fixed inset-y-0 left-0 z-20 flex w-[248px] flex-col border-r border-line bg-white px-5 py-6">
         <div className="mb-10 flex items-center gap-3 px-2">
@@ -87,6 +91,7 @@ export default function Home() {
             <button aria-label="Search" className="rounded-lg p-2 text-muted hover:bg-slate-50"><Search size={18} /></button>
             <button aria-label="Notifications" className="relative rounded-lg p-2 text-muted hover:bg-slate-50"><Bell size={18} /><span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-rose-500 ring-2 ring-white" /></button>
             <div className="mx-1 h-7 w-px bg-line" />
+            <SignOutButton />
             <div className="hidden text-right sm:block"><div className="text-xs font-bold text-ink">Good morning</div><div className="text-[10px] text-muted">Here is your care overview</div></div>
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#dcece5] text-xs font-bold text-[#28634f]">MQ</div>
           </div>
@@ -124,5 +129,6 @@ export default function Home() {
         </div>
       </main>
     </div>
+    </AuthGuard>
   );
 }
