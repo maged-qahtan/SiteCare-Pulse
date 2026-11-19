@@ -55,11 +55,7 @@ export default function SetupPage() {
       const supabase = createClient();
       const cleanSlug = makeSlug(slug || name);
       if (cleanSlug.length < 3) throw new Error("Use at least 3 English letters or numbers for the workspace URL.");
-      const createOrganization = supabase.rpc as unknown as (
-        functionName: "create_organization",
-        args: { org_name: string; org_slug: string }
-      ) => Promise<{ error: Error | null }>;
-      const { error: createError } = await createOrganization("create_organization", {
+      const { error: createError } = await supabase.rpc("create_organization", {
         org_name: name.trim(),
         org_slug: cleanSlug
       });
