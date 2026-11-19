@@ -63,6 +63,7 @@ function SlaSettingsContent() {
       if (!membership) throw new Error("No workspace membership was found.");
       setOrganizationId(membership.organization_id);
       setRole(membership.role);
+      if (membership.role === "client") throw new Error("SLA settings are available to workspace staff only.");
 
       const { data, error: policyError } = await supabase
         .from("sla_policies")
