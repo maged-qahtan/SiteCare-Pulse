@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Activity, ArrowLeft, Download, FileText, LoaderCircle, RefreshCw } from "lucide-react";
 import { AuthGuard } from "@/components/auth-guard";
 import { createClient } from "@/lib/supabase/client";
+import { getActiveMembership } from "@/lib/supabase/workspace";
 
 type RequestRow = {
   id: string;
@@ -51,15 +52,7 @@ function ReportsContent() {
       const { data: authData, error: authError } = await supabase.auth.getUser();
       if (authError || !authData.user) throw authError ?? new Error("Please sign in again.");
 
-      const { data: membershipData, error: membershipError } = await supabase
-        .from("organization_members")
-        .select("organization_id")
-        .eq("user_id", authData.user.id)
-        .limit(1)
-        .maybeSingle();
-      if (membershipError) throw membershipError;
-      const membership = membershipData as { organization_id: string } | null;
-      if (!membership) throw new Error("No workspace membership was found.");
+      const membership = await getActiveMembership(supabase, authData.user.id);
 
       const start = new Date(`${month}-01T00:00:00`);
       if (Number.isNaN(start.getTime())) throw new Error("Choose a valid reporting month.");
