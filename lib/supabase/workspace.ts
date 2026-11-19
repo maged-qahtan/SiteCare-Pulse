@@ -1,12 +1,16 @@
+import type { createClient } from "@/lib/supabase/client";
+
+type SupabaseBrowserClient = ReturnType<typeof createClient>;
+
 export type WorkspaceMembership = {
   organization_id: string;
-  role: string;
+  role: "owner" | "admin" | "member" | "client";
   client_account_id: string | null;
 };
 
 export const ACTIVE_WORKSPACE_KEY = "sitecare-pulse:active-workspace";
 
-export async function getWorkspaceMemberships(supabase: any, userId: string): Promise<WorkspaceMembership[]> {
+export async function getWorkspaceMemberships(supabase: SupabaseBrowserClient, userId: string): Promise<WorkspaceMembership[]> {
   const { data, error } = await supabase
     .from("organization_members")
     .select("organization_id,role,client_account_id")
