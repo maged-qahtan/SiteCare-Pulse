@@ -12,44 +12,46 @@ export function AuthGuard({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let active = true;
-    let subscription: { unsubscribe: () => void } | undefined;
+    const supabase = createClient();
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!active) return;
+      if (!session) router.replace("/login/");
+    });
 
-    async function verifySession() {
+    async function verifyWorkspace() {
       try {
-        const supabase = createClient();
-        const authState = supabase.auth.onAuthStateChange((_event, session) => {
-          if (!active) return;
-          if (!session) {
-            router.replace("/login");
-          } else {
-            setReady(true);
-          }
-        });
-        subscription = authState.data.subscription;
+        const { data: userData, error: userError } = await supabase.auth.getUser();
+        if (userError || !userData.user) {
+          router.replace("/login/");
+          return;
+        }
 
-        const { data, error } = await supabase.auth.getUser();
+        const { data: memberships, error: membershipError } = await supabase
+          .from("organization_members")
+          .select("organization_id")
+          .eq("user_id", userData.user.id)
+          .limit(1);
+
+        if (membershipError) throw membershipError;
         if (!active) return;
 
-        if (error || !data.user) {
-          router.replace("/login");
+        if (!memberships || memberships.length === 0) {
+          router.replace("/setup/");
           return;
         }
 
         setReady(true);
       } catch (error) {
         if (active) {
-          setConfigurationError(
-            error instanceof Error ? error.message : "Authentication is not configured."
-          );
+          setConfigurationError(error instanceof Error ? error.message : "Unable to verify workspace access.");
         }
       }
     }
 
-    void verifySession();
-
+    void verifyWorkspace();
     return () => {
       active = false;
-      subscription?.unsubscribe();
+      authListener.subscription.unsubscribe();
     };
   }, [router]);
 
@@ -60,7 +62,7 @@ export function AuthGuard({ children }: { children: ReactNode }) {
           <Activity className="mx-auto text-brand" size={28} />
           <h1 className="mt-4 text-lg font-bold text-ink">Workspace setup required</h1>
           <p className="mt-2 text-sm leading-6 text-muted">{configurationError}</p>
-          <p className="mt-3 text-xs leading-5 text-muted">Add the Supabase project URL and publishable key to the hosting environment, then rebuild the site.</p>
+          <p className="mt-3 text-xs leading-5 text-muted">Check the Supabase project URL, publishable key, and database permissions in the hosting environment.</p>
         </div>
       </main>
     );
@@ -71,7 +73,7 @@ export function AuthGuard({ children }: { children: ReactNode }) {
       <main className="flex min-h-screen items-center justify-center bg-[#f5f7f5]">
         <div className="flex items-center gap-3 text-sm font-medium text-muted">
           <LoaderCircle className="animate-spin text-brand" size={18} />
-          Verifying your workspace session...
+          Verifying your workspace...
         </div>
       </main>
     );
