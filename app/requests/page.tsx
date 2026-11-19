@@ -362,7 +362,7 @@ function RequestsContent() {
     <div className="min-h-screen bg-[#f5f7f5]">
       <header className="flex h-[72px] items-center justify-between border-b border-line bg-white px-5 sm:px-8">
         <Link href="/dashboard/" className="flex items-center gap-3 text-sm font-bold text-ink"><span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand text-white"><Activity size={19} /></span>SiteCare <span className="-ml-3 text-brand">Pulse</span></Link>
-        <nav aria-label="Workspace navigation" className="flex items-center gap-3 text-xs font-semibold text-muted"><Link href="/dashboard/" className="hover:text-brand">Dashboard</Link><Link href="/clients/" className="hover:text-brand">Clients</Link><Link href="/sites/" className="hover:text-brand">Websites</Link><Link href="/requests/" className="hover:text-brand">Requests</Link><Link href="/reports/" className="hover:text-brand">Reports</Link></nav><SignOutButton />
+        <nav aria-label="Workspace navigation" className="flex items-center gap-3 text-xs font-semibold text-muted"><Link href="/dashboard/" className="hover:text-brand">Dashboard</Link><Link href="/clients/" className="hover:text-brand">Clients</Link><Link href="/sites/" className="hover:text-brand">Websites</Link><Link href="/requests/" className="hover:text-brand">Requests</Link><Link href="/reports/" className="hover:text-brand">Reports</Link><Link href="/sla-settings/" className="hover:text-brand">SLA</Link></nav><SignOutButton />
       </header>
       <main className="mx-auto max-w-6xl px-5 py-8 sm:px-8">
         <Link href="/dashboard/" className="mb-5 inline-flex items-center gap-2 text-xs font-semibold text-muted hover:text-brand"><ArrowLeft size={14} /> Back to overview</Link>
