@@ -24,6 +24,10 @@ type ServiceRequest = {
   priority: Priority;
   status: RequestStatus;
   due_at: string | null;
+  response_due_at: string | null;
+  resolution_due_at: string | null;
+  first_response_at: string | null;
+  resolved_at: string | null;
   created_at: string;
 };
 type RequestComment = { id: string; request_id: string; user_id: string; body: string; created_at: string };
@@ -126,7 +130,7 @@ function RequestsContent() {
       const [clientResult, siteResult, requestResult, commentResult, attachmentResult] = await Promise.all([
         clientTable.select("id,name,status").eq("organization_id", membership.organization_id).order("name", { ascending: true }),
         siteTable.select("id,client_account_id,name,url,platform").eq("organization_id", membership.organization_id).order("name", { ascending: true }),
-        requestTable.select("id,client_account_id,site_id,title,description,priority,status,due_at,created_at")
+        requestTable.select("id,client_account_id,site_id,title,description,priority,status,due_at,response_due_at,resolution_due_at,first_response_at,resolved_at,created_at")
           .eq("organization_id", membership.organization_id).order("created_at", { ascending: false }),
         commentTable.select("id,request_id,user_id,body,created_at")
           .eq("organization_id", membership.organization_id).order("created_at", { ascending: true }),
@@ -385,7 +389,13 @@ function RequestsContent() {
                 <div className="min-w-0"><h3 className="text-sm font-bold text-ink">{request.title}</h3><p className="mt-1 text-xs leading-5 text-muted">{request.description || "No additional details provided."}</p><div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-muted"><span>{clientNames.get(request.client_account_id) ?? "Client"}</span>{request.site_id && <span>· {siteNames.get(request.site_id) ?? "Website"}</span>}<span>· {new Date(request.created_at).toLocaleDateString()}</span></div></div>
                 <div className="flex shrink-0 flex-wrap items-center gap-2"><span className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${request.priority === "urgent" ? "bg-rose-50 text-rose-700" : request.priority === "high" ? "bg-amber-50 text-amber-700" : "bg-slate-100 text-slate-600"}`}>{priorityLabels[request.priority]}</span><span className="rounded-full bg-[#edf4f0] px-2.5 py-1 text-[10px] font-bold text-brand">{statusLabels[request.status]}</span></div>
               </div>
-              {request.due_at && <div className={`mt-3 flex items-center gap-1.5 text-[10px] ${new Date(request.due_at).getTime() < Date.now() && !["resolved", "closed"].includes(request.status) ? "font-semibold text-rose-600" : "text-muted"}`}><CalendarClock size={12} /> Due {new Date(request.due_at).toLocaleString()}{new Date(request.due_at).getTime() < Date.now() && !["resolved", "closed"].includes(request.status) && <span className="ml-1 rounded-full bg-rose-50 px-2 py-0.5">Overdue</span>}</div>}
+              {request.due_at && <div className={`mt-3 flex items-center gap-1.5 text-[10px] ${new Date(request.due_at).getTime() < Date.now() && !["resolved", "closed"].includes(request.status) ? "font-semibold text-rose-600" : "text-muted"}`}><CalendarClock size={12} /> Manual due {new Date(request.due_at).toLocaleString()}{new Date(request.due_at).getTime() < Date.now() && !["resolved", "closed"].includes(request.status) && <span className="ml-1 rounded-full bg-rose-50 px-2 py-0.5">Overdue</span>}</div>}
+              {(request.response_due_at || request.resolution_due_at) && <div className="mt-3 flex flex-wrap gap-2">
+                {request.response_due_at && !request.first_response_at && <span className={`rounded-full px-2.5 py-1 text-[10px] font-semibold ${new Date(request.response_due_at).getTime() < Date.now() ? "bg-rose-50 text-rose-700" : "bg-sky-50 text-sky-700"}`}>First response target: {new Date(request.response_due_at).toLocaleString()}{new Date(request.response_due_at).getTime() < Date.now() ? " · overdue" : ""}</span>}
+                {request.first_response_at && <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold text-emerald-700">First response recorded</span>}
+                {request.resolution_due_at && !request.resolved_at && <span className={`rounded-full px-2.5 py-1 text-[10px] font-semibold ${new Date(request.resolution_due_at).getTime() < Date.now() ? "bg-rose-50 text-rose-700" : "bg-amber-50 text-amber-800"}`}>Resolution target: {new Date(request.resolution_due_at).toLocaleString()}{new Date(request.resolution_due_at).getTime() < Date.now() ? " · overdue" : ""}</span>}
+                {request.resolved_at && <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold text-emerald-700">Resolved {new Date(request.resolved_at).toLocaleString()}</span>}
+              </div>}
               {!isClient && <div className="mt-3 flex items-center gap-2"><label htmlFor={`status-${request.id}`} className="text-[10px] font-semibold text-muted">Update status</label><select id={`status-${request.id}`} value={request.status} onChange={event => void updateStatus(request.id, event.target.value as RequestStatus)} className="rounded-lg border border-line bg-white px-2 py-1.5 text-[10px] text-ink">{Object.entries(statusLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>}
               <div className="mt-4 border-t border-line pt-3">
                 <div className="mb-2 flex items-center gap-1.5 text-[10px] font-bold text-muted"><MessageSquare size={12} /> Updates ({comments.filter(comment => comment.request_id === request.id).length})</div>
