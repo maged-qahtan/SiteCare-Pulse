@@ -33,13 +33,22 @@ function ClientsContent() {
       const supabase = createClient();
       const { data: userData, error: userError } = await supabase.auth.getUser();
       if (userError || !userData.user) throw userError ?? new Error("Please sign in again.");
-      const { data: membership, error: membershipError } = await supabase
-        .from("organization_members")
-        .select("organization_id")
+      const membershipQuery = supabase.from("organization_members") as unknown as {
+        select: (columns: string) => {
+          eq: (column: string, value: string) => {
+            limit: (count: number) => {
+              single: () => Promise<{ data: { organization_id: string; role: string } | null; error: Error | null }>;
+            };
+          };
+        };
+      };
+      const { data: membership, error: membershipError } = await membershipQuery
+        .select("organization_id,role")
         .eq("user_id", userData.user.id)
         .limit(1)
         .single();
       if (membershipError) throw membershipError;
+      if (!membership) throw new Error("No agency workspace membership was found.");
       const { data, error: clientsError } = await supabase
         .from("client_accounts")
         .select("id,name,contact_email,website_url,status,created_at")
@@ -78,7 +87,15 @@ function ClientsContent() {
       const cleanWebsite = website.trim()
         ? (/^https?:\/\//i.test(website.trim()) ? website.trim() : `https://${website.trim()}`)
         : null;
-      const { error: insertError } = await supabase.from("client_accounts").insert({
+      const clientAccounts = supabase.from("client_accounts") as unknown as {
+        insert: (values: {
+          organization_id: string;
+          name: string;
+          contact_email: string | null;
+          website_url: string | null;
+        }) => Promise<{ error: Error | null }>;
+      };
+      const { error: insertError } = await clientAccounts.insert({
         organization_id: membership.organization_id,
         name: name.trim(),
         contact_email: email.trim() || null,
