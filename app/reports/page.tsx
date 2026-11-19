@@ -144,7 +144,7 @@ function ReportsContent() {
       <div className="mx-auto max-w-5xl">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Link href="/dashboard/" className="inline-flex items-center gap-2 text-xs font-semibold text-muted hover:text-brand"><ArrowLeft size={15} /> Back to overview</Link>
-          <nav aria-label="Workspace navigation" className="flex flex-wrap gap-3 text-xs font-semibold text-muted"><Link href="/clients/" className="hover:text-brand">Clients</Link><Link href="/sites/" className="hover:text-brand">Websites</Link><Link href="/requests/" className="hover:text-brand">Requests</Link><Link href="/sla-settings/" className="hover:text-brand">SLA settings</Link></nav>
+          <nav aria-label="Workspace navigation" className="flex flex-wrap gap-3 text-xs font-semibold text-muted"><Link href="/clients/" className="hover:text-brand">Clients</Link><Link href="/sites/" className="hover:text-brand">Websites</Link><Link href="/requests/" className="hover:text-brand">Requests</Link><Link href="/sla-settings/" className="hover:text-brand">SLA settings</Link><Link href="/team/" className="hover:text-brand">Team</Link></nav>
         </div>
         <div className="mt-6 flex flex-wrap items-end justify-between gap-4">
           <div>
