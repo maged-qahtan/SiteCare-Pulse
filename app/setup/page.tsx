@@ -34,7 +34,7 @@ export default function SetupPage() {
           .limit(1);
         if (membershipError) throw membershipError;
         if (data && data.length > 0) {
-          router.replace("/");
+          router.replace("/dashboard/");
           return;
         }
       } catch (caught) {
@@ -64,7 +64,7 @@ export default function SetupPage() {
         org_slug: cleanSlug
       });
       if (createError) throw createError;
-      router.replace("/");
+      router.replace("/dashboard/");
       router.refresh();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Unable to create your workspace.");
