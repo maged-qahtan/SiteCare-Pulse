@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { BriefcaseBusiness, Globe2, LifeBuoy, CheckCircle2, LoaderCircle } from "lucide-react";
+import { BriefcaseBusiness, Globe2, LifeBuoy, CheckCircle2, LoaderCircle, AlertTriangle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 type Summary = {
@@ -10,6 +10,7 @@ type Summary = {
   sites: number;
   openRequests: number;
   resolvedThisMonth: number;
+  slaBreaches: number;
 };
 type RequestRow = {
   id: string;
@@ -18,6 +19,13 @@ type RequestRow = {
   priority: string;
   created_at: string;
   client_account_id: string;
+};
+type SlaCheckRow = {
+  response_due_at: string | null;
+  resolution_due_at: string | null;
+  first_response_at: string | null;
+  resolved_at: string | null;
+  status: string;
 };
 type ActivityRow = {
   id: string;
@@ -84,16 +92,17 @@ export function LiveDashboardOverview() {
         monthStart.setDate(1);
         monthStart.setHours(0, 0, 0, 0);
 
-        const [clientsResult, sitesResult, openResult, resolvedResult, requestResult, activityResult] = await Promise.all([
+        const [clientsResult, sitesResult, openResult, resolvedResult, requestResult, activityResult, slaResult] = await Promise.all([
           supabase.from("client_accounts").select("id,name", { count: "exact" }).eq("organization_id", membership.organization_id),
           supabase.from("sites").select("id", { count: "exact", head: true }).eq("organization_id", membership.organization_id),
           supabase.from("service_requests").select("id", { count: "exact", head: true }).eq("organization_id", membership.organization_id).in("status", ["new", "triaged", "in_progress", "waiting_on_client"]),
-          supabase.from("service_requests").select("id", { count: "exact", head: true }).eq("organization_id", membership.organization_id).in("status", ["resolved", "closed"]).gte("created_at", monthStart.toISOString()),
+          supabase.from("service_requests").select("id", { count: "exact", head: true }).eq("organization_id", membership.organization_id).in("status", ["resolved", "closed"]).gte("resolved_at", monthStart.toISOString()),
           supabase.from("service_requests").select("id,title,status,priority,created_at,client_account_id").eq("organization_id", membership.organization_id).order("created_at", { ascending: false }).limit(5),
-          supabase.from("activity_events").select("id,entity_type,action,details,created_at").eq("organization_id", membership.organization_id).order("created_at", { ascending: false }).limit(8)
+          supabase.from("activity_events").select("id,entity_type,action,details,created_at").eq("organization_id", membership.organization_id).order("created_at", { ascending: false }).limit(8),
+          supabase.from("service_requests").select("response_due_at,resolution_due_at,first_response_at,resolved_at,status").eq("organization_id", membership.organization_id).not("status", "in", "(resolved,closed)")
         ]);
 
-        for (const result of [clientsResult, sitesResult, openResult, resolvedResult, requestResult, activityResult]) {
+        for (const result of [clientsResult, sitesResult, openResult, resolvedResult, requestResult, activityResult, slaResult]) {
           if (result.error) throw result.error;
         }
 
@@ -106,7 +115,11 @@ export function LiveDashboardOverview() {
           clients: clientsResult.count ?? 0,
           sites: sitesResult.count ?? 0,
           openRequests: openResult.count ?? 0,
-          resolvedThisMonth: resolvedResult.count ?? 0
+          resolvedThisMonth: resolvedResult.count ?? 0,
+          slaBreaches: ((slaResult.data ?? []) as SlaCheckRow[]).filter((request) =>
+            (request.response_due_at && !request.first_response_at && new Date(request.response_due_at).getTime() < Date.now())
+            || (request.resolution_due_at && !request.resolved_at && new Date(request.resolution_due_at).getTime() < Date.now())
+          ).length
         });
         setRequests((requestResult.data ?? []) as RequestRow[]);
         setActivity((activityResult.data ?? []) as ActivityRow[]);
@@ -129,7 +142,7 @@ export function LiveDashboardOverview() {
 
   return (
     <>
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <Metric label="Client accounts" value={summary.clients} icon={BriefcaseBusiness} hint="Live records in this workspace" />
         <Metric label="Websites" value={summary.sites} icon={Globe2} hint="Registered client websites" />
         <Metric label="Open requests" value={summary.openRequests} icon={LifeBuoy} hint="Requests that still need attention" />
