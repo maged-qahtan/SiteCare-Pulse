@@ -51,8 +51,8 @@ export default function Home() {
             <span className="mt-3 inline-block text-[11px] font-bold text-muted">Help center coming soon</span>
           </div>
           <div className="mt-5 flex items-center gap-3 border-t border-line pt-5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#dcece5] text-xs font-bold text-[#28634f]">MQ</div>
-            <div className="min-w-0 flex-1"><div className="truncate text-xs font-bold text-ink">Workspace Admin</div><div className="text-[10px] text-muted">Agency workspace</div></div>
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#dcece5] text-xs font-bold text-[#28634f]">WS</div>
+            <div className="min-w-0 flex-1"><div className="truncate text-xs font-bold text-ink">Workspace member</div><div className="text-[10px] text-muted">Agency workspace</div></div>
             <ChevronDown size={15} className="text-muted" />
           </div>
         </aside>
@@ -66,7 +66,7 @@ export default function Home() {
               <div className="mx-1 h-7 w-px bg-line" />
               <SignOutButton />
               <div className="hidden text-right sm:block"><div className="text-xs font-bold text-ink">Your workspace</div><div className="text-[10px] text-muted">Live care overview</div></div>
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#dcece5] text-xs font-bold text-[#28634f]">MQ</div>
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#dcece5] text-xs font-bold text-[#28634f]">WS</div>
             </div>
           </header>
 
