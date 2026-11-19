@@ -89,7 +89,8 @@ function ReportsContent() {
     const headers = ["Date", "Event", "Entity type", "Client", "Subject", "Priority", "Status", "Due date"];
     const rows = events.map((event) => {
       const request = requests.find((item) => item.id === event.entity_id);
-      const clientId = request?.client_account_id ?? (event.entity_type === "client" ? event.entity_id : "");
+      const clientFromEvent = typeof event.details?.client_account_id === "string" ? event.details.client_account_id : "";
+      const clientId = request?.client_account_id ?? (event.entity_type === "client" ? event.entity_id : clientFromEvent);
       const subject = typeof event.details?.title === "string"
         ? event.details.title
         : typeof event.details?.name === "string"
@@ -101,9 +102,9 @@ function ReportsContent() {
         event.entity_type,
         clientNames[clientId] ?? "",
         subject,
-        request?.priority ?? "",
-        request?.status ?? "",
-        request?.due_at ?? ""
+        request?.priority ?? (typeof event.details?.new_priority === "string" ? event.details.new_priority : ""),
+        request?.status ?? (typeof event.details?.new_status === "string" ? event.details.new_status : ""),
+        request?.due_at ?? (typeof event.details?.due_at === "string" ? event.details.due_at : "")
       ].map(csvCell).join(",");
     });
     const csv = [headers.map(csvCell).join(","), ...rows].join("\r\n");
@@ -118,7 +119,8 @@ function ReportsContent() {
     URL.revokeObjectURL(url);
   }
 
-  const resolved = requests.filter((request) => ["resolved", "closed"].includes(request.status)).length;
+  const resolvedIds = new Set(events.filter((event) => event.action === "request.status_changed" && ["resolved", "closed"].includes(String(event.details?.new_status))).map((event) => event.entity_id));
+  const resolved = resolvedIds.size;
   const open = requests.filter((request) => !["resolved", "closed"].includes(request.status)).length;
 
   return (
@@ -141,8 +143,8 @@ function ReportsContent() {
 
         <section className="mt-6 grid gap-4 sm:grid-cols-3">
           <div className="rounded-2xl border border-line bg-white p-5"><div className="text-xs font-semibold text-muted">Requests created</div><div className="mt-3 text-3xl font-bold text-ink">{loading ? "—" : requests.length}</div></div>
-          <div className="rounded-2xl border border-line bg-white p-5"><div className="text-xs font-semibold text-muted">Resolved / closed</div><div className="mt-3 text-3xl font-bold text-ink">{loading ? "—" : resolved}</div></div>
-          <div className="rounded-2xl border border-line bg-white p-5"><div className="text-xs font-semibold text-muted">Still open</div><div className="mt-3 text-3xl font-bold text-ink">{loading ? "—" : open}</div></div>
+          <div className="rounded-2xl border border-line bg-white p-5"><div className="text-xs font-semibold text-muted">Resolved during month</div><div className="mt-3 text-3xl font-bold text-ink">{loading ? "—" : resolved}</div></div>
+          <div className="rounded-2xl border border-line bg-white p-5"><div className="text-xs font-semibold text-muted">Open requests created this month</div><div className="mt-3 text-3xl font-bold text-ink">{loading ? "—" : open}</div></div>
         </section>
 
         <section className="mt-6 overflow-hidden rounded-2xl border border-line bg-white">
