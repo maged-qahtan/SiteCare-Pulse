@@ -20,7 +20,7 @@ export async function getWorkspaceMemberships(supabase: SupabaseBrowserClient, u
   return (data ?? []) as WorkspaceMembership[];
 }
 
-export async function getActiveMembership(supabase: any, userId: string): Promise<WorkspaceMembership> {
+export async function getActiveMembership(supabase: SupabaseBrowserClient, userId: string): Promise<WorkspaceMembership> {
   const memberships = await getWorkspaceMemberships(supabase, userId);
   if (memberships.length === 0) throw new Error("No workspace membership was found.");
 
