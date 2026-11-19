@@ -110,6 +110,15 @@ function SitesContent() {
       if (!organizationId || !clientId) throw new Error("Choose a client account first.");
       const rawUrl = url.trim();
       const cleanUrl = /^https?:\/\//i.test(rawUrl) ? rawUrl : `https://${rawUrl}`;
+      let parsedUrl: URL;
+      try {
+        parsedUrl = new URL(cleanUrl);
+      } catch {
+        throw new Error("Enter a valid website address, such as example.com.");
+      }
+      if (!["http:", "https:"].includes(parsedUrl.protocol) || !parsedUrl.hostname.includes(".")) {
+        throw new Error("Enter a valid public website domain, such as example.com.");
+      }
       const siteTable = supabase.from("sites") as unknown as {
         insert: (values: {
           organization_id: string;
