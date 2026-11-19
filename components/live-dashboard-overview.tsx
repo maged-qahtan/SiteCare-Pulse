@@ -19,6 +19,13 @@ type RequestRow = {
   created_at: string;
   client_account_id: string;
 };
+type ActivityRow = {
+  id: string;
+  entity_type: string;
+  action: string;
+  details: Record<string, unknown>;
+  created_at: string;
+};
 
 const statusLabels: Record<string, string> = {
   new: "New",
@@ -50,6 +57,7 @@ function Metric({ label, value, icon: Icon, hint }: {
 export function LiveDashboardOverview() {
   const [summary, setSummary] = useState<Summary | null>(null);
   const [requests, setRequests] = useState<RequestRow[]>([]);
+  const [activity, setActivity] = useState<ActivityRow[]>([]);
   const [clientNames, setClientNames] = useState<Record<string, string>>({});
   const [error, setError] = useState("");
 
@@ -75,15 +83,16 @@ export function LiveDashboardOverview() {
         monthStart.setDate(1);
         monthStart.setHours(0, 0, 0, 0);
 
-        const [clientsResult, sitesResult, openResult, resolvedResult, requestResult] = await Promise.all([
+        const [clientsResult, sitesResult, openResult, resolvedResult, requestResult, activityResult] = await Promise.all([
           supabase.from("client_accounts").select("id,name", { count: "exact" }).eq("organization_id", membership.organization_id),
           supabase.from("sites").select("id", { count: "exact", head: true }).eq("organization_id", membership.organization_id),
           supabase.from("service_requests").select("id", { count: "exact", head: true }).eq("organization_id", membership.organization_id).in("status", ["new", "triaged", "in_progress", "waiting_on_client"]),
           supabase.from("service_requests").select("id", { count: "exact", head: true }).eq("organization_id", membership.organization_id).in("status", ["resolved", "closed"]).gte("created_at", monthStart.toISOString()),
-          supabase.from("service_requests").select("id,title,status,priority,created_at,client_account_id").eq("organization_id", membership.organization_id).order("created_at", { ascending: false }).limit(5)
+          supabase.from("service_requests").select("id,title,status,priority,created_at,client_account_id").eq("organization_id", membership.organization_id).order("created_at", { ascending: false }).limit(5),
+          supabase.from("activity_events").select("id,entity_type,action,details,created_at").eq("organization_id", membership.organization_id).order("created_at", { ascending: false }).limit(8)
         ]);
 
-        for (const result of [clientsResult, sitesResult, openResult, resolvedResult, requestResult]) {
+        for (const result of [clientsResult, sitesResult, openResult, resolvedResult, requestResult, activityResult]) {
           if (result.error) throw result.error;
         }
 
@@ -99,6 +108,7 @@ export function LiveDashboardOverview() {
           resolvedThisMonth: resolvedResult.count ?? 0
         });
         setRequests((requestResult.data ?? []) as RequestRow[]);
+        setActivity((activityResult.data ?? []) as ActivityRow[]);
       } catch (caught) {
         if (active) setError(caught instanceof Error ? caught.message : "Unable to load live workspace metrics.");
       }
@@ -151,6 +161,40 @@ export function LiveDashboardOverview() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+      </section>
+
+      <section className="mt-6 overflow-hidden rounded-2xl border border-line bg-white shadow-card">
+        <div className="border-b border-line px-5 py-4">
+          <h2 className="text-sm font-bold text-ink">Activity history</h2>
+          <p className="mt-1 text-[11px] text-muted">Automatically recorded workspace events</p>
+        </div>
+        {activity.length === 0 ? (
+          <p className="px-5 py-8 text-center text-xs text-muted">New client, website, request, and comment activity will appear here.</p>
+        ) : (
+          <div className="divide-y divide-line">
+            {activity.map((event) => {
+              const labels: Record<string, string> = {
+                "client.created": "Client account created",
+                "site.created": "Website registered",
+                "request.created": "Service request created",
+                "request.status_changed": "Request status changed",
+                "request.priority_changed": "Request priority changed",
+                "request.updated": "Request details updated",
+                "request.comment_added": "Comment added to a request"
+              };
+              const subject = typeof event.details?.name === "string" ? event.details.name : typeof event.details?.title === "string" ? event.details.title : "Workspace item";
+              return (
+                <div key={event.id} className="flex items-start justify-between gap-3 px-5 py-3">
+                  <div className="min-w-0">
+                    <div className="text-xs font-semibold text-ink">{labels[event.action] ?? event.action}</div>
+                    <div className="mt-1 truncate text-[11px] text-muted">{subject}</div>
+                  </div>
+                  <time className="shrink-0 text-[10px] text-muted">{new Date(event.created_at).toLocaleString()}</time>
+                </div>
+              );
+            })}
           </div>
         )}
       </section>
