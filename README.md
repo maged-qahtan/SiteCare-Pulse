@@ -6,7 +6,7 @@ SiteCare Pulse helps website agencies coordinate client requests, delivery work,
 
 ## Current status
 
-The repository contains the initial dashboard UI and a sample-data preview. A Supabase Free project is provisioned and the database migrations are applied. The repository now includes an initial Supabase Auth sign-in/sign-up foundation, callback handler, route protection, and sign-out control, but the app is **not yet connected to live Supabase credentials or tested with a real signup**.
+The repository contains the initial dashboard UI and a sample-data preview. A Supabase Free project is provisioned and the database migrations are applied. The repository now includes a browser-based Supabase Auth sign-in/sign-up foundation, an email callback page, a dashboard session gate, and sign-out control. Next.js is configured for static export so it can be hosted on Cloudflare Pages Free. The app is **not yet connected to live deployment credentials or tested with a real signup**.
 
 Email delivery, production deployment, client-facing workflows, monitoring services, and billing are not configured.
 
@@ -38,7 +38,16 @@ The Supabase security advisor currently reports one intentional warning for the 
 
 **Important:** These checks are not a complete security certification or full end-to-end test suite. Before real customer data is used, add automated tests for every role and every read/write policy, validate the organization-creation RPC, and review the remaining advisor warning.
 
-## Authentication setup
+## Static deployment and authentication
+
+The app is configured for Cloudflare Pages static hosting:
+
+- Framework preset: Next.js (Static HTML Export)
+- Build command: `npm run build`
+- Build output directory: `out`
+- Node.js version: `22` (pinned in `.node-version`)
+
+The browser uses Supabase Auth. The dashboard's client-side session gate is a user-experience guard, not the data-security boundary. **Row Level Security in Supabase must protect every live data query and mutation.** Never put a Supabase service-role or secret key in the browser.
 
 The app expects these public environment variables at deployment time:
 
@@ -47,7 +56,7 @@ The app expects these public environment variables at deployment time:
 
 Do not put a Supabase `service_role` or secret key in browser-visible environment variables or commit secrets to GitHub. The middleware leaves preview routes accessible until both public values are configured; once configured, it verifies Supabase JWT claims before protecting the dashboard.
 
-The Supabase Auth URL configuration must allow the deployed app's `/auth/callback` URL and the local development callback before signup confirmation can be tested.
+The Supabase Auth URL configuration must allow the deployed app's `https://<your-pages-domain>/auth/callback/` URL and the local development callback `http://localhost:3000/auth/callback/` before signup confirmation can be tested. Cloudflare Pages deployment must use the Free plan; do not enable paid Workers, Functions, or add-ons.
 
 ## Technology
 
