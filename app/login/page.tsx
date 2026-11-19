@@ -18,8 +18,10 @@ export default function LoginPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const authError = new URLSearchParams(window.location.search).get("error");
+    const params = new URLSearchParams(window.location.search);
+    const authError = params.get("error");
     if (authError) setError(authError);
+    if (params.get("mode") === "signup") setMode("signup");
   }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
