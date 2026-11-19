@@ -12,14 +12,16 @@ export function AuthGuard({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let active = true;
-    const supabase = createClient();
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!active) return;
-      if (!session) router.replace("/login/");
-    });
+    let authListener: ReturnType<ReturnType<typeof createClient>["auth"]["onAuthStateChange"]> | undefined;
 
     async function verifyWorkspace() {
       try {
+        const supabase = createClient();
+        const listener = supabase.auth.onAuthStateChange((_event, session) => {
+          if (!active) return;
+          if (!session) router.replace("/login/");
+        });
+        authListener = listener.data;
         const { data: userData, error: userError } = await supabase.auth.getUser();
         if (userError || !userData.user) {
           router.replace("/login/");
@@ -51,7 +53,7 @@ export function AuthGuard({ children }: { children: ReactNode }) {
     void verifyWorkspace();
     return () => {
       active = false;
-      authListener.subscription.unsubscribe();
+      authListener?.subscription.unsubscribe();
     };
   }, [router]);
 
