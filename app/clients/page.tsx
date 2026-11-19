@@ -19,6 +19,10 @@ type ClientAccount = {
 function ClientsContent() {
   const [clients, setClients] = useState<ClientAccount[]>([]);
   const [role, setRole] = useState("owner");
+  const [organizationId, setOrganizationId] = useState("");
+  const [memberEmail, setMemberEmail] = useState("");
+  const [memberClientId, setMemberClientId] = useState("");
+  const [linking, setLinking] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [website, setWebsite] = useState("");
@@ -51,13 +55,16 @@ function ClientsContent() {
       if (membershipError) throw membershipError;
       if (!membership) throw new Error("No agency workspace membership was found.");
       setRole(membership.role);
+      setOrganizationId(membership.organization_id);
       const { data, error: clientsError } = await supabase
         .from("client_accounts")
         .select("id,name,contact_email,website_url,status,created_at")
         .eq("organization_id", membership.organization_id)
         .order("created_at", { ascending: false });
       if (clientsError) throw clientsError;
-      setClients((data ?? []) as ClientAccount[]);
+      const visibleClients = (data ?? []) as ClientAccount[];
+      setClients(visibleClients);
+      setMemberClientId(current => current || visibleClients[0]?.id || "");
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Unable to load client accounts.");
     } finally {
@@ -137,6 +144,31 @@ function ClientsContent() {
     }
   }
 
+  async function handleLinkExistingUser(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setLinking(true);
+    setError("");
+    setNotice("");
+    try {
+      if (!organizationId || !memberClientId) throw new Error("Choose a client account first.");
+      const supabase = createClient() as unknown as {
+        rpc: (name: string, args: { target_org: string; target_client: string; member_email: string }) => Promise<{ data: string | null; error: Error | null }>;
+      };
+      const { error: linkError } = await supabase.rpc("add_existing_client_member", {
+        target_org: organizationId,
+        target_client: memberClientId,
+        member_email: memberEmail.trim()
+      });
+      if (linkError) throw linkError;
+      setMemberEmail("");
+      setNotice("The confirmed account is now connected to this client portal. No email was sent.");
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Unable to connect this client account.");
+    } finally {
+      setLinking(false);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-[#f5f7f5]">
       <header className="flex h-[72px] items-center justify-between border-b border-line bg-white px-5 sm:px-8">
@@ -165,6 +197,14 @@ function ClientsContent() {
               <button disabled={saving || !name.trim()} className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-4 py-3 text-xs font-bold text-white hover:bg-brand-dark disabled:opacity-60">{saving ? <LoaderCircle size={15} className="animate-spin" /> : <Plus size={15} />}{saving ? "Saving..." : "Create client account"}</button>
             </form>
             <p className="mt-4 text-[10px] leading-5 text-muted">Client data is protected by your workspace&apos;s database access policies.</p>
+            {(role === "owner" || role === "admin") && <div className="mt-6 border-t border-line pt-5">
+              <div className="mb-3"><h3 className="text-sm font-bold text-ink">Connect a client portal user</h3><p className="mt-1 text-[11px] leading-5 text-muted">The person must already have a confirmed SiteCare Pulse account. This step links their access and does not send an email.</p></div>
+              <form onSubmit={handleLinkExistingUser} className="space-y-3">
+                <label className="block"><span className="mb-1.5 block text-xs font-semibold text-ink">Client account</span><select required value={memberClientId} onChange={event => setMemberClientId(event.target.value)} className="w-full rounded-xl border border-line bg-white px-3.5 py-3 text-sm outline-none focus:border-brand"><option value="">Choose a client</option>{clients.map(client => <option key={client.id} value={client.id}>{client.name}</option>)}</select></label>
+                <label className="block"><span className="mb-1.5 block text-xs font-semibold text-ink">Confirmed account email</span><input required type="email" value={memberEmail} onChange={event => setMemberEmail(event.target.value)} placeholder="client@example.com" className="w-full rounded-xl border border-line px-3.5 py-3 text-sm outline-none focus:border-brand" /></label>
+                <button disabled={linking || !memberEmail.trim() || !memberClientId} className="flex w-full items-center justify-center gap-2 rounded-xl border border-brand px-4 py-3 text-xs font-bold text-brand disabled:opacity-50">{linking ? <LoaderCircle size={15} className="animate-spin" /> : <Plus size={15} />}{linking ? "Connecting..." : "Connect client portal access"}</button>
+              </form>
+            </div>}
           </aside>}
         </div>
       </main>
